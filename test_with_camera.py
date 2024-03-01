@@ -31,7 +31,7 @@ def make_boxes(num_detections, detection_boxes, detection_classes, detection_sco
         detection_classes: Class indices
         detection_scores: Confidence scores
     Returns:
-        None """
+        Frame with bounding boxes and labels"""
     for i in range(num_detections):
         if detection_scores[i] > 0.4:  # Confidence threshold
             ymin, xmin, ymax, xmax = detection_boxes[i]
