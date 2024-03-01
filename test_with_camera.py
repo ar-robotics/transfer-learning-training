@@ -10,12 +10,12 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-height = input_details[0]['shape'][1]
-width = input_details[0]['shape'][2]
+height = int(input_details[0]['shape'][1])
+width = int(input_details[0]['shape'][2])
 
 with open('labels.txt', 'r') as f:
     labels = [line.strip() for line in f.readlines()]
-    print(labels)
+
 
 #Initialize video capture
 cap = cv2.VideoCapture(0)
@@ -26,10 +26,10 @@ def make_boxes(num_detections, detection_boxes, detection_classes, detection_sco
     
     """ Draw the boxes on the frame and label them
     Args:
-    num_detections: Number of detections
-    detection_boxes: Bounding box coordinates
-    detection_classes: Class indices
-    detection_scores: Confidence scores
+        num_detections: Number of detections
+        detection_boxes: Bounding box coordinates
+        detection_classes: Class indices
+        detection_scores: Confidence scores
     Returns:
         None """
     for i in range(num_detections):
@@ -47,35 +47,42 @@ def make_boxes(num_detections, detection_boxes, detection_classes, detection_sco
             cv2.putText(frame, label, (int(left), int(top)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
     return frame
 
-            
+
+
+#Loop over frames from the video file stream
+def interpret(frame,height,width, interpreter, input_details, output_details):
+    """ Interpret the frame and make predictions
+    Args:
+        frame: Input frame
+        height: Frame height
+        width: Frame width
+        interpreter: TFLite interpreter
+        input_details: Input details
+        output_details: Output details
+    Returns:
+        num_detections: Number of detections
+        scores: Confidence scores
+        boxes: Bounding box coordinates
+        classes: Class indices """
+    input_frame = cv2.resize(frame, (width, height))
+    input_frame = np.expand_dims(input_frame, axis=0).astype(np.uint8)
+    interpreter.set_tensor(input_details[0]['index'], input_frame)
+    interpreter.invoke()
+    num_detections = int(interpreter.get_tensor(output_details[2]['index'])[0])
+    scores = interpreter.get_tensor(output_details[0]['index'])[0]
+    boxes = interpreter.get_tensor(output_details[1]['index'])[0]
+    classes = interpreter.get_tensor(output_details[3]['index'])[0]
+    return num_detections, scores, boxes, classes
+
            
+
 
 while True:
     ret, frame = cap.read()
     if not ret:
         break
-    
-    #Resize frame to model input dimensions
-    input_frame = cv2.resize(frame, (width, height))
-    
-    #Convert frame to float32 and normalize (if your model requires normalization)
-    input_frame = np.expand_dims(input_frame, axis=0).astype(np.uint8)
-    #input_frame /= 255.0  # Uncomment this if your model expects input values to be normalized
-    
-    #Set the model input and run inference
-    interpreter.set_tensor(input_details[0]['index'], input_frame)
-    interpreter.invoke()
-    
-    #Retrieve detection results
-    num_detections = int(interpreter.get_tensor(output_details[2]['index'])[0])
-    
-    scores = interpreter.get_tensor(output_details[0]['index'])[0]
-    #print(scores.shape)# Confidence scores
-    boxes = interpreter.get_tensor(output_details[1]['index'])[0] 
-    #print(boxes.shape)# Bounding box coordinates
-    classes = interpreter.get_tensor(output_details[3]['index'])[0]  # Class inde
-    #print(classes.shape)
-    #Draw boxes
+  
+    num_detections, scores, boxes, classes = interpret(frame,height,width,interpreter, input_details, output_details)
     make_boxes(num_detections, boxes, classes, scores)
     #Display the resulting frame
     cv2.imshow('Object Detection', frame)
