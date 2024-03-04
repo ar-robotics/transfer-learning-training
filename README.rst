@@ -12,7 +12,7 @@ Steps to create a tflite model
 
 2. In the images folder, there should be all pictures that are to be used for training. The images should be in 'jpeg' or 'png' format. There should also be a csv file that contains the labels for the images. The csv file should be in the following format:
 
-.. code-block:: csv
+.. code-block:: text
 
     set,image(path),label,xmax,xmin,,,ymax,ymin,
     train,images/0001.jpg,0.32,0.444,,,1,0.123,
@@ -30,3 +30,24 @@ Steps to create a tflite model
 .. code-block:: bash
 
     python test_with_camera.py
+
+Documentation
+-------------
+
+HTML
+^^^^
+
+.. code-block:: bash
+
+    sudo apt install make python3-sphinx
+    cd docs/
+    make clean 
+    make html
+
+PDF
+^^^
+
+.. code-block:: bash
+
+    cd docs/
+    make latexpdf
