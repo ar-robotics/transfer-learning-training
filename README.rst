@@ -39,7 +39,8 @@ HTML
 
 .. code-block:: bash
 
-    sudo apt install make python3-sphinx
+    sudo apt install make python3-sphinx python3-pip
+    pip3 install furo sphinxcontrib-jquery
     cd docs/
     make clean 
     make html
@@ -49,5 +50,6 @@ PDF
 
 .. code-block:: bash
 
+    sudo apt install latexmk texlive-latex-extra
     cd docs/
     make latexpdf

@@ -2,23 +2,8 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-# Load TFLite model and allocate tensors
-interpreter = tf.lite.Interpreter(model_path="tflite_models/people_detection_2.tflite")
-interpreter.allocate_tensors()
 
-# Get model details
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-
-height = int(input_details[0]["shape"][1])
-width = int(input_details[0]["shape"][2])
-
-with open("labels.txt", "r") as f:
-    labels = [line.strip() for line in f.readlines()]
-
-
-# Initialize video capture
-cap = cv2.VideoCapture(0)
+labels = []
 
 
 def make_boxes(num_detections, detection_boxes, detection_classes, detection_scores):
@@ -99,22 +84,42 @@ def interpret(frame, height, width, interpreter, input_details, output_details):
     return num_detections, scores, boxes, classes
 
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
-
-    num_detections, scores, boxes, classes = interpret(
-        frame, height, width, interpreter, input_details, output_details
+if __name__ == "__main__":
+    # Load TFLite model and allocate tensors
+    interpreter = tf.lite.Interpreter(
+        model_path="tflite_models/people_detection_2.tflite"
     )
-    make_boxes(num_detections, boxes, classes, scores)
-    # Display the resulting frame
-    cv2.imshow("Object Detection", frame)
+    interpreter.allocate_tensors()
 
-    # Break loop with 'q'
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
+    # Get model details
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
 
-# Release capture
-cap.release()
-cv2.destroyAllWindows()
+    height = int(input_details[0]["shape"][1])
+    width = int(input_details[0]["shape"][2])
+
+    with open("labels.txt", "r") as f:
+        labels = [line.strip() for line in f.readlines()]
+
+    # Initialize video capture
+    cap = cv2.VideoCapture(0)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        num_detections, scores, boxes, classes = interpret(
+            frame, height, width, interpreter, input_details, output_details
+        )
+        make_boxes(num_detections, boxes, classes, scores)
+        # Display the resulting frame
+        cv2.imshow("Object Detection", frame)
+
+        # Break loop with 'q'
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+
+    # Release capture
+    cap.release()
+    cv2.destroyAllWindows()

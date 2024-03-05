@@ -11,17 +11,9 @@ from tflite_model_maker.config import ExportFormat
 from tflite_model_maker import model_spec
 from tflite_model_maker import object_detector
 
-# shows only errors
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-"""check tensorflow version"""
-assert tf.__version__.startswith("2")
-
-tf.get_logger().setLevel("ERROR")
 from absl import logging
 
-logging.set_verbosity(logging.ERROR)
-csv_file_path = "csv_files/people_updated_labels.csv"
-images_dir = "images_zipped/"
+COLORS = None
 
 
 def load_data(csv_file_path, images_dir):
@@ -38,9 +30,6 @@ def load_data(csv_file_path, images_dir):
         csv_file_path, images_dir=images_dir
     )
     return train_data, test_data, validation_data
-
-
-train_data, test_data, validation_data = load_data(csv_file_path, images_dir)
 
 
 def train_model(train_data, validation_data):
@@ -63,43 +52,6 @@ def train_model(train_data, validation_data):
         validation_data=validation_data,
     )
     return model
-
-
-model = train_model(train_data, validation_data)
-print(model.evaluate(test_data))
-
-# Redirects the stdout to a file
-with open("out.txt", "w") as f:
-    with contextlib.redirect_stdout(f):
-        # This will print the evaluation results to 'out.txt' instead of the standard output
-        print(model.evaluate(test_data))
-
-model.export(export_dir=".")  # Exports to the export directory
-model.export(export_dir=".", export_format=[ExportFormat.TFLITE, ExportFormat.LABEL])
-model.export(
-    export_dir=".", tflite_filename="People_Detection_2.tflite"
-)  # , quantization_config=config)
-
-
-print(model.evaluate_tflite("People_Detection_2.tflite", test_data))
-
-# Redirects the stdout to a file
-with open("out.txt", "w") as f:
-    with contextlib.redirect_stdout(f):
-        # This will print the evaluation results to 'out.txt' instead of the standard output
-        print(model.evaluate_tflite("People_Detection_2.tflite", test_data))
-
-
-model_path = "People_Detection_2.tflite"
-
-# Load the labels into a list
-classes = ["???"] * model.model_spec.config.num_classes
-label_map = model.model_spec.config.label_map
-for label_id, label_name in label_map.as_dict().items():
-    classes[label_id - 1] = label_name
-
-# Define a list of colors for visualization
-COLORS = np.random.randint(0, 255, size=(len(classes), 3), dtype=np.uint8)
 
 
 def preprocess_image(image_path, input_size):
@@ -204,25 +156,75 @@ def run_odt_and_draw_results(image_path, interpreter, threshold=0.5):
     return original_uint8
 
 
-local_image_path = "0a80b03afcf13297.jpg"
-detection_threshold = 0.3
+if __name__ == "__main__":
+    # shows only errors
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+    """check tensorflow version"""
+    assert tf.__version__.startswith("2")
 
-im = Image.open(local_image_path)
-im.thumbnail((512, 512), Image.LANCZOS)
-im.save("saved", "JPEG")
+    tf.get_logger().setLevel("ERROR")
 
-# Load the TFLite model
-interpreter = tf.lite.Interpreter(model_path=model_path)
-interpreter.allocate_tensors()
+    logging.set_verbosity(logging.ERROR)
+    csv_file_path = "csv_files/people_updated_labels.csv"
+    images_dir = "images_zipped/"
 
-# Run inference and draw detection result on the local copy of the original file
-detection_result_image = run_odt_and_draw_results(
-    local_image_path, interpreter, threshold=detection_threshold
-)
+    train_data, test_data, validation_data = load_data(csv_file_path, images_dir)
 
-# Show the detection result
-img2 = Image.fromarray(detection_result_image)
-plt.figure(figsize=(10, 10))
-plt.imshow(detection_result_image)
-plt.axis("off")  # Don't show axes for images
-plt.show()
+    model = train_model(train_data, validation_data)
+    print(model.evaluate(test_data))
+
+    # Redirects the stdout to a file
+    with open("out.txt", "w") as f:
+        with contextlib.redirect_stdout(f):
+            # This will print the evaluation results to 'out.txt' instead of the standard output
+            print(model.evaluate(test_data))
+
+    model.export(export_dir=".")  # Exports to the export directory
+    model.export(
+        export_dir=".", export_format=[ExportFormat.TFLITE, ExportFormat.LABEL]
+    )
+    model.export(
+        export_dir=".", tflite_filename="People_Detection_2.tflite"
+    )  # , quantization_config=config)
+
+    print(model.evaluate_tflite("People_Detection_2.tflite", test_data))
+
+    # Redirects the stdout to a file
+    with open("out.txt", "w") as f:
+        with contextlib.redirect_stdout(f):
+            # This will print the evaluation results to 'out.txt' instead of the standard output
+            print(model.evaluate_tflite("People_Detection_2.tflite", test_data))
+
+    model_path = "People_Detection_2.tflite"
+
+    # Load the labels into a list
+    classes = ["???"] * model.model_spec.config.num_classes
+    label_map = model.model_spec.config.label_map
+    for label_id, label_name in label_map.as_dict().items():
+        classes[label_id - 1] = label_name
+
+    # Define a list of colors for visualization
+    COLORS = np.random.randint(0, 255, size=(len(classes), 3), dtype=np.uint8)
+
+    local_image_path = "0a80b03afcf13297.jpg"
+    detection_threshold = 0.3
+
+    im = Image.open(local_image_path)
+    im.thumbnail((512, 512), Image.LANCZOS)
+    im.save("saved", "JPEG")
+
+    # Load the TFLite model
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
+
+    # Run inference and draw detection result on the local copy of the original file
+    detection_result_image = run_odt_and_draw_results(
+        local_image_path, interpreter, threshold=detection_threshold
+    )
+
+    # Show the detection result
+    img2 = Image.fromarray(detection_result_image)
+    plt.figure(figsize=(10, 10))
+    plt.imshow(detection_result_image)
+    plt.axis("off")  # Don't show axes for images
+    plt.show()
