@@ -75,16 +75,16 @@ class Detection:
         self.interpreter.set_tensor(self.input_detail[0]["index"], input_frame)
         self.interpreter.invoke()
         self.num_detections = int(
-            self.interpreter.get_tensor(self.output_detail[2]["index"])[0]
+            self.interpreter.get_tensor(self.output_detail[3]["index"])[0]
         )
         self.scores = self.interpreter.get_tensor(  # noqa
-            self.output_detail[0]["index"]
+            self.output_detail[2]["index"]
         )[0]
         self.boxes = self.interpreter.get_tensor(  # noqa
-            self.output_detail[1]["index"]
+            self.output_detail[0]["index"]
         )[0]
         self.classes = self.interpreter.get_tensor(  # noqa
-            self.output_detail[3]["index"]
+            self.output_detail[1]["index"]
         )[0]
 
     def make_boxes(self):
@@ -98,7 +98,7 @@ class Detection:
 
         Returns:
             Frame with bounding boxes and labels"""
-        for i in range(self.num_detections):
+        for i in range(len(self.scores)):
             if self.scores[i] > 0.4:  # Confidence threshold
                 ymin, xmin, ymax, xmax = self.boxes[i]
                 (left, right, top, bottom) = (
@@ -157,7 +157,7 @@ class Detection:
                 # Draw the second line of text
                 cv2.putText(
                     frame,
-                    # label_line_2,
+                    label_line_2,
                     (int(left), text_y_start),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.7,
