@@ -1,12 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from pymongo import MongoClient
 
-
-# Connect to MongoDB
-client = MongoClient("mongodb://localhost:27017/")
-db = client["mongodbVSCodePlaygroundDB"]
 
 # Initialize video capture
 cap = cv2.VideoCapture(0)
@@ -18,7 +13,7 @@ def load_labels(path):
     return labels
 
 
-labels = load_labels("labels-ssd.txt")
+labels = load_labels("transfer-learning-training/labels.txt")
 
 
 class Interpreter:
@@ -75,16 +70,16 @@ class Detection:
         self.interpreter.set_tensor(self.input_detail[0]["index"], input_frame)
         self.interpreter.invoke()
         self.num_detections = int(
-            self.interpreter.get_tensor(self.output_detail[3]["index"])[0]
+            self.interpreter.get_tensor(self.output_detail[2]["index"])[0]
         )
         self.scores = self.interpreter.get_tensor(  # noqa
-            self.output_detail[2]["index"]
-        )[0]
-        self.boxes = self.interpreter.get_tensor(  # noqa
             self.output_detail[0]["index"]
         )[0]
-        self.classes = self.interpreter.get_tensor(  # noqa
+        self.boxes = self.interpreter.get_tensor(  # noqa
             self.output_detail[1]["index"]
+        )[0]
+        self.classes = self.interpreter.get_tensor(  # noqa
+            self.output_detail[3]["index"]
         )[0]
 
     def make_boxes(self):
@@ -98,7 +93,7 @@ class Detection:
 
         Returns:
             Frame with bounding boxes and labels"""
-        for i in range(len(self.scores)):
+        for i in range(self.num_detections):
             if self.scores[i] > 0.4:  # Confidence threshold
                 ymin, xmin, ymax, xmax = self.boxes[i]
                 (left, right, top, bottom) = (
@@ -114,24 +109,8 @@ class Detection:
                     (0, 255, 0),
                     2,  # noqa
                 )
-                # Retrieve the class name
                 object_name = labels[int(self.classes[i])]
-                query = {"type": object_name}
-                items_info = employment.find_one(query)
-                all_info_dict = {}
-
-                # Loop through all key-value pairs in the items_info document
-                for key, value in items_info.items():
-                    # Save each key-value pair into the dictionary
-                    all_info_dict[key] = value
-                print(all_info_dict)
-                # Draw label
-                # label = "%s" % (object_name)  # Example: 'cat: 72%'
                 label_line_1 = f"{object_name}"  # , Age: {age}"
-                # label_line_2 = (
-                #     f"Date of Employment:
-                # {date_of_employment.strftime('%Y-%m-%d')}"
-                # )
 
                 (text_width, text_height), baseLine = cv2.getTextSize(
                     label_line_1, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2
@@ -149,30 +128,12 @@ class Detection:
                     (0, 0, 0),
                     2,
                 )
-                """Adjust Y position for the second line
-                based on the height of the first line
-                """
-                text_y_start += text_height + baseLine
-
-                # Draw the second line of text
-                cv2.putText(
-                    frame,
-                    label_line_2,
-                    (int(left), text_y_start),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,
-                    (0, 0, 0),
-                    2,
-                )
 
         return frame
 
 
-employment = db["classes"]
-
-
 interpreter = Interpreter(
-    "C:/Users/aditi/Documents/Bachelor_p/Object_Detection-pi/pre-trained model/tflite-models/ssd_mobilenet.tflite"
+    "transfer-learning-training/tflite_models/people_detection_2.tflite"
 )
 input_details, output_details, height, width = interpreter.get_details()
 interpreter = interpreter.get_interpreter()
