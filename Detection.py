@@ -52,7 +52,6 @@ class Interpreter:
 class Detection:
     def __init__(
         self,
-        frame,
         labels,
         height,
         width,
@@ -61,7 +60,9 @@ class Detection:
         output_detail,
         collection,
     ):
-        self.frame = frame
+        self.display_frame = None
+        self.frame = None
+        self.ret = None
         self.height = height
         self.width = width
         self.labels = labels
@@ -108,7 +109,7 @@ class Detection:
             self.output_detail[1]["index"]
         )[0]
 
-    def retreive_info(self, object_name):
+    def __retreive_info(self, object_name):
         """
         Retrieve all information for the object from the database
 
@@ -128,7 +129,18 @@ class Detection:
                 all_info_dict[key] = value
         return all_info_dict
 
-    def make_boxes(self):
+    def set_frame(self, ret, frame):
+        self.ret = ret
+        self.frame = frame
+
+    def analyze(self):
+        while True:
+            if self.frame is None or not self.ret:
+                continue
+            self.interpret()
+            self.display_frame = self.__make_boxes()
+
+    def __make_boxes(self):
         """Draw the boxes on the frame and label them
         Args:
             num_detections: Number of detections
@@ -139,7 +151,7 @@ class Detection:
         Returns:
             Frame with bounding boxes and labels"""
         for i in range(len(self.scores)):
-            if self.scores[i] > 0.8:  # Confidence threshold
+            if self.scores[i] > 0.5:  # Confidence threshold
                 ymin, xmin, ymax, xmax = self.boxes[i]
                 (left, right, top, bottom) = (
                     xmin * self.frame.shape[1],
@@ -155,12 +167,13 @@ class Detection:
                     2,  # noqa
                 )
                 object_name = self.labels[int(self.classes[i])]
-                # dict_info = self.retreive_info(object_name)
+                dict_info = self.__retreive_info(object_name)
                 # Loop through all key-value pairs in the items_info document
                 label_with_score = "{}: {:.2f}".format(
                     object_name, self.scores[i]  # noqa
                 )
-                # y_offset = ymin - 25
+
+                y_offset = ymin - 25
                 # (text_width, text_height), baseLine = cv2.getTextSize(
                 #     label_line_1, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2
                 # )

@@ -1,6 +1,7 @@
 from Database import Database
 from Detection import Interpreter, Detection
 import cv2
+from threading import Thread
 
 # Initialize video capture
 cap = cv2.VideoCapture(0)
@@ -20,27 +21,35 @@ input_details, output_details, height, width = interpreter.get_details()
 interpreter = interpreter.get_interpreter()
 
 
-while True:
+def get_frame() -> tuple:
     ret, frame = cap.read()
-    if not ret:
-        break
-    # Detect objects
-    detection_obj = Detection(
-        frame,
-        labels,
-        height,
-        width,
-        interpreter,
-        input_details,
-        output_details,
-        collection,  # noqa
-    )
-    detection_obj.interpret()
-    frame = detection_obj.make_boxes()
+    return ret, frame
 
+
+# Detect objects
+detection_obj = Detection(
+    labels,
+    height,
+    width,
+    interpreter,
+    input_details,
+    output_details,
+    collection,  # noqa
+)
+thread = Thread(target=detection_obj.analyze, daemon=True)
+thread.start()
+
+while True:
+    ret, frame = get_frame()
+    detection_obj.set_frame(ret, frame)
+    # detection_obj.analyze()
     # Display the resulting frame
-    cv2.imshow("Object Detection", frame)
-
+    if (
+        detection_obj.display_frame is not None
+    ):  # Ensure there is a display_frame to show
+        cv2.imshow("Object Detection", detection_obj.display_frame)
+    else:
+        cv2.imshow("Object Detection", frame)
     # Break loop with 'q'
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
