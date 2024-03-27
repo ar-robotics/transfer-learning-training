@@ -2,6 +2,14 @@ from pymongo import MongoClient
 
 
 class Database:
+    """Class to handle database operations
+
+    Attributes:
+        client: MongoDB client
+        db: Database object
+        collection: Collection object
+    """
+
     def __init__(self, db_name, collection_name):
         """Initialize the database connection
 
