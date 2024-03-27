@@ -1,6 +1,10 @@
 import cv2
+import queue
 import numpy as np
 import tensorflow as tf
+
+frame_queue = queue.Queue(maxsize=10)  # Holds frames for processing
+display_queue = queue.Queue(maxsize=10)
 
 
 class Interpreter:
@@ -60,7 +64,6 @@ class Detection:
         output_detail,
         collection,
     ):
-        self.display_frame = None
         self.frame = None
         self.ret = None
         self.height = height
@@ -75,7 +78,7 @@ class Detection:
         self.num_detections = None
         self.collection = collection
 
-    def interpret(self):
+    def interpret(self) -> None:
         """Interpret the frame and make predictions
 
         Args:
@@ -92,13 +95,13 @@ class Detection:
             boxes: Bounding box coordinates
             classes: Class indices
         """
-        input_frame = cv2.resize(self.frame, (self.width, self.height))
-        input_frame = np.expand_dims(input_frame, axis=0).astype(np.uint8)
-        self.interpreter.set_tensor(self.input_detail[0]["index"], input_frame)
+        # input_frame = cv2.resize(self.frame, (self.width, self.height))
+        # input_frame = np.expand_dims(input_frame, axis=0).astype(np.uint8)
+        # self.interpreter.set_tensor(self.input_detail[0]["index"], input_frame)
         self.interpreter.invoke()
-        self.num_detections = int(
-            self.interpreter.get_tensor(self.output_detail[3]["index"])[0]
-        )
+        # self.num_detections = int(
+        #     self.interpreter.get_tensor(self.output_detail[3]["index"])[0]
+        # )
         self.scores = self.interpreter.get_tensor(  # noqa
             self.output_detail[2]["index"]
         )[0]
@@ -109,7 +112,7 @@ class Detection:
             self.output_detail[1]["index"]
         )[0]
 
-    def __retreive_info(self, object_name):
+    def __retreive_info(self, object_name) -> dict:
         """
         Retrieve all information for the object from the database
 
@@ -129,16 +132,22 @@ class Detection:
                 all_info_dict[key] = value
         return all_info_dict
 
-    def set_frame(self, ret, frame):
-        self.ret = ret
-        self.frame = frame
+    # def set_frame(self, ret, frame):
+    #     self.ret = ret
+    #     self.frame = frame
 
-    def analyze(self):
-        while True:
-            if self.frame is None or not self.ret:
-                continue
-            self.interpret()
-            self.display_frame = self.__make_boxes()
+    # def analyze(self,frame):
+    #     while True:
+    #         self.frame = frame
+    #         if self.frame is None or not self.ret:
+    #             continue
+    #         self.interpret()
+    #         self.display_frame = self.__make_boxes()
+    def analyze(self, frame):
+        self.frame = frame
+        self.interpret()
+        processed_frame = self.__make_boxes()
+        return processed_frame
 
     def __make_boxes(self):
         """Draw the boxes on the frame and label them
@@ -150,61 +159,53 @@ class Detection:
 
         Returns:
             Frame with bounding boxes and labels"""
-        for i in range(len(self.scores)):
-            if self.scores[i] > 0.5:  # Confidence threshold
-                ymin, xmin, ymax, xmax = self.boxes[i]
-                (left, right, top, bottom) = (
-                    xmin * self.frame.shape[1],
-                    xmax * self.frame.shape[1],
-                    ymin * self.frame.shape[0],
-                    ymax * self.frame.shape[0],
-                )
-                cv2.rectangle(
-                    self.frame,
-                    (int(left), int(top)),
-                    (int(right), int(bottom)),
-                    (0, 255, 0),
-                    2,  # noqa
-                )
-                object_name = self.labels[int(self.classes[i])]
-                dict_info = self.__retreive_info(object_name)
-                # Loop through all key-value pairs in the items_info document
-                label_with_score = "{}: {:.2f}".format(
-                    object_name, self.scores[i]  # noqa
-                )
-
-                y_offset = ymin - 25
-                # (text_width, text_height), baseLine = cv2.getTextSize(
-                #     label_line_1, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2
-                # )
-                # cv2.rectangle(
-                #     self.frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2
-                # )  # noqa
-                cv2.putText(
-                    self.frame,
-                    label_with_score,
-                    (int(xmin), int(ymin - 5)),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,
-                    (0, 0, 0),
-                    2,
-                )
-                # for key, value in dict_info.items():
-                #     # Generate the text for this key-value pair
-                #     info_text = "{}: {}".format(key, value)
-                #     # Display this key-value pair on the frame
-                #     cv2.putText(
-                #         self.frame,
-                #         info_text,
-                #         (int(xmin), int(y_offset)),
-                #         cv2.FONT_ITALIC,
-                #         0.5,  # Yo
-                #         (
-                #             255,
-                #             0,
-                #             0,
-                #         ),
-                #         2,
-                #     )
-                #     y_offset -= 20
+        # for i in range(len(self.scores)):
+        #     if self.scores[i] > 0.5:  # Confidence threshold
+        #         ymin, xmin, ymax, xmax = self.boxes[i]
+        #         xmin = int(xmin * self.width)
+        #         xmax = int(xmax * self.width)
+        #         ymin = int(ymin * self.height)
+        #         ymax = int(ymax * self.height)
+        #         object_name = self.labels[int(self.classes[i])]
+        #         # dict_info = self.__retreive_info(object_name)
+        #         # Loop through all key-value pairs in the items_info document
+        #         label_with_score = "{}: {:.2f}".format(
+        #             object_name, self.scores[i]  # noqa
+        #         )
+        #         print(label_with_score)
+        #         # y_offset = ymin - 25
+        #         cv2.rectangle(
+        #             self.frame,
+        #             (xmin, ymin),
+        #             (xmax, ymax),
+        #             (0, 255, 0),
+        #             2,  # noqa
+        #         )
+        #         cv2.putText(
+        #             self.frame,
+        #             label_with_score,
+        #             (xmin, ymin - 5),
+        #             cv2.FONT_HERSHEY_SIMPLEX,
+        #             0.7,
+        #             (0, 0, 0),
+        #             2,
+        #         )
+        # for key, value in dict_info.items():
+        #     # Generate the text for this key-value pair
+        #     info_text = "{}: {}".format(key, value)
+        #     # Display this key-value pair on the frame
+        #     cv2.putText(
+        #         self.frame,
+        #         info_text,
+        #         (int(xmin), int(y_offset)),
+        #         cv2.FONT_ITALIC,
+        #         0.5,  # Yo
+        #         (
+        #             255,
+        #             0,
+        #             0,
+        #         ),
+        #         2,
+        #     )
+        #     y_offset -= 20
         return self.frame
