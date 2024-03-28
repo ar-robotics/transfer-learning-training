@@ -71,9 +71,12 @@ class Detection:
         input_detail,
         output_detail,
         collection,
+        imW=1280,
+        imH=720,
     ):
         self.frame = None
-        self.ret = None
+        self.imW = imW
+        self.imH = imH
         self.height = height
         self.width = width
         self.labels = labels
@@ -83,6 +86,8 @@ class Detection:
         self.scores = None
         self.boxes = {}
         self.classes = None
+        self.frame_rate_calc = None
+        self.freq = None
         self.num_detections = None
         self.collection = collection
         self.boxes_idx, self.classes_idx, self.scores_idx = self.set_index()
@@ -105,7 +110,7 @@ class Detection:
             boxes_idx, classes_idx, scores_idx = 0, 1, 2
         return boxes_idx, classes_idx, scores_idx
 
-    def interpret(self, frame1) -> None:
+    def interpret(self) -> None:
         """Interpret the frame and make predictions
 
         Args:
@@ -122,7 +127,6 @@ class Detection:
             boxes: Bounding box coordinates
             classes: Class indices
         """
-        self.frame = frame1.copy()
         frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb, (self.width, self.height))
         input_data = np.expand_dims(frame_resized, axis=0)
@@ -156,21 +160,33 @@ class Detection:
             # Save each key-value pair into the dictionary
             if key != "_id" and key != "type":
                 all_info_dict[key] = value
-        print(all_info_dict)
         return all_info_dict
 
-    # def set_frame(self, ret, frame):
-    #     self.ret = ret
-    #     self.frame = frame
+    def analyze(self, frame1):
+        self.frame = frame1.copy()
+        self.interpret()
+        processed_frame = self.__make_boxes()
+        return processed_frame
 
-    # def analyze(self, frame):
-    #     self.frame = frame
-    #     self.interpret()
-    #     processed_frame = self.__make_boxes()
-    #     return processed_frame
+    def draw_framerate(self, frame_rate_calc):
+        # Draw framerate in corner of frame
+        cv2.putText(
+            self.frame,
+            "FPS: {0:.2f}".format(frame_rate_calc),
+            (30, 50),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 255, 0),
+            2,
+            cv2.LINE_AA,
+        )
 
-    def make_boxes(self):
-        """Draw bounding boxes on the frame
+    def __make_boxes(self):
+        """Draw bounding boxes on the frame and display the information
+
+        Args:
+            ImH: Height of the frame
+            ImW: Width of the frame
 
         Returns:
             frame: Frame with bounding boxes
@@ -179,11 +195,11 @@ class Detection:
             if (self.scores[i] > 0.5) and (
                 self.scores[i] <= 1.0
             ):  # Confidence threshold
-                ymin, xmin, ymax, xmax = self.boxes[i]
-                xmin = int(xmin * self.width)
-                xmax = int(xmax * self.width)
-                ymin = int(ymin * self.height)
-                ymax = int(ymax * self.height)
+
+                ymin = int(max(1, (self.boxes[i][0] * self.imH)))
+                xmin = int(max(1, (self.boxes[i][1] * self.imW)))
+                ymax = int(min(self.imH, (self.boxes[i][2] * self.imH)))
+                xmax = int(min(self.imW, (self.boxes[i][3] * self.imW)))
                 cv2.rectangle(
                     self.frame,
                     (xmin, ymin),
@@ -237,3 +253,20 @@ class Detection:
                     )
                     y_offset -= 20
         return self.frame
+
+    def calculate_framerate(self):
+        """Calculate and return the frame rate.
+
+        This function calculates the frame rate by
+        dividing the number of frames processed
+        by the time taken to process those frames.
+        The frame rate is returned along with
+        the frequency of the system clock.
+
+        Returns:
+            tuple: A tuple containing the frame rate and the clock frequency.
+
+        """
+        self.frame_rate_calc = 1
+        self.freq = cv2.getTickFrequency()
+        return self.frame_rate_calc, self.freq
