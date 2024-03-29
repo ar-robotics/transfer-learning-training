@@ -3,7 +3,15 @@ import tensorflow as tf
 import numpy as np
 
 
-class Interpret:
+class ExtractModel:
+    """Class for extracting the TFLite model and labels from the file.
+
+    Attributes:
+        model_path: Path to the TFLite model
+        label_path: Path to the label file
+        interpreter: TFLite interpreter
+    """
+
     def __init__(self, model_path, label_path):
         """Initialize the TFLite interpreter
 
