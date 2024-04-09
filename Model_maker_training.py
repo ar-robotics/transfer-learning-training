@@ -3,12 +3,14 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
+# import argparse
+
 # import contextlib
 from PIL import Image
 from matplotlib import pyplot as plt
 from absl import logging
 
-# from tflite_model_maker.config import QuantizationConfig
+from tflite_model_maker.config import QuantizationConfig
 from tflite_model_maker.config import ExportFormat
 from tflite_model_maker import model_spec
 from tflite_model_maker import object_detector
@@ -43,9 +45,22 @@ class DataLoader:
 
 
 class ModelTrainer:
+    """A class to train the model on the given dataset and evaluate it.
+    Args:
+        train_data: Training dataset, in the form of Dataloader.
+        validation_data: Validation dataset, in the form of Dataloader.
+
+    Attributes:
+        train_data: Training dataset, in the form of Dataloader.
+        validation_data: Validation dataset, in the form of Dataloader.
+        model: The trained model.
+
+    """
+
     def __init__(self, train_data, validation_data):
         self.train_data = train_data
         self.validation_data = validation_data
+        self.eval = None
         self.model = None
 
     def train_model(self):
@@ -61,7 +76,7 @@ class ModelTrainer:
             self.train_data,
             model_spec=spec,
             batch_size=4,
-            train_whole_model=False,
+            train_whole_model=True,
             epochs=25,
             validation_data=self.validation_data,
         )
@@ -72,19 +87,32 @@ class ModelTrainer:
         Args:
           test_data: Test dataset, in the form of Dataloader.
         """
-        print(self.model.evaluate(test_data))
+        self.eval = print(self.model.evaluate(test_data))
         self.model.export(export_dir=".")
         self.model.export(
             export_dir=".",
             export_format=[ExportFormat.TFLITE, ExportFormat.LABEL],  # noqa
         )
         self.model.export(
-            export_dir=".", tflite_filename="People_Detection.tflite"
+            export_dir=".", tflite_filename="bolt_detection.tflite"
         )  # noqa
 
+        self.model.export(
+            export_dir="tflite_models",
+            tflite_filename="f16-bolt_detection.tflite",
+            quantization_config=QuantizationConfig.for_float16(),
+        )
+        self.model.export(
+            export_dir="tflite_models",
+            tflite_filename="i8-bolt_detection.tflite",
+            quantization_config=QuantizationConfig.for_int8((self.train_data)),
+        )
 
-csv_file_path = "people_updated_labels.csv"
-images_dir = "/mnt/c/Users/aditi/Downloads/archive/images/"
+
+csv_file_path = "csv_files/annotations.csv"
+images_dir = (
+    "/mnt/c/Users/aditi/Downloads/boltloosening.v2i.tensorflow/png2jpg/"  # noqa
+)
 
 data_loader = DataLoader(csv_file_path, images_dir)
 train_data, test_data, validation_data = data_loader.load_data()
@@ -183,10 +211,10 @@ model = model_trainer.train_model()
 model_trainer.evaluate_and_export(test_data)
 
 
-model_path = "People_Detection.tflite"
+model_path = "bolt_detection.tflite"
 
 
-local_image_path = "OIDv4_ToolKit/OID/test_all/0a80b03afcf13297.jpg"
+local_image_path = "istockphoto-466907776-640x640.jpg"
 detection_threshold = 0.3
 
 im = Image.open(local_image_path)

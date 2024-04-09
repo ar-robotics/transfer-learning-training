@@ -31,6 +31,64 @@ Steps to create a tflite model
 
     python test_with_camera.py
 
+=======================================
+ Webcam Object Detection Using TensorFlow
+=======================================
+
+Description
+===========
+
+This program utilizes a TensorFlow Lite model to perform object detection on a live webcam feed. It draws boxes and scores around the objects of interest in each frame from the webcam. To improve frames per second (FPS), the webcam object runs in a separate thread from the main detection algorithm.
+Inspiration for the Videostream is from 
+Installation
+============
+
+To run this project, ensure you have Python version 3.8 or above installed on your system. Clone the project repository to your local machine and navigate to the project directory.
+
+Requirements
+============
+
+Before running the program, you need to install the required Python libraries. You can do this by running:
+
+.. code-block:: bash
+
+    pip install -r requirements.txt
+
+
+Usage
+=====
+
+To run the object detection program, execute the following command in the terminal:
+
+.. code-block:: bash
+
+    python main.py --modeldir YOUR_MODEL_DIRECTORY
+
+Where `YOUR_MODEL_DIRECTORY` is the path to the directory containing your TensorFlow Lite model file and label map.
+
+Command-Line Arguments
+----------------------
+
+- `--modeldir`: Folder where the `.tflite` file is located (required).
+- `--graph`: Name of the `.tflite` file, default is `detect.tflite`.
+- `--labels`: Name of the label map file, default is `labelmap.txt`.
+- `--threshold`: Minimum confidence threshold for displaying detected objects, default is 0.5.
+- `--resolution`: Desired webcam resolution in WxH. Ensure the webcam supports the resolution, default is `1280x720`.
+
+Files and Modules
+=================
+
+- `main.py`: The main script that initiates the webcam feed and object detection.
+- `Videostream.py`: Handles video streaming from the webcam in a separate thread to improve performance.
+- `Detection.py`: Contains the `ExtractModel` and `Detection` classes for loading the TensorFlow Lite model and performing object detection.
+- `Database.py`: Manages database operations, including connecting to MongoDB, inserting data, and querying data.
+
+
+
+
+
+
+
 Documentation
 -------------
 

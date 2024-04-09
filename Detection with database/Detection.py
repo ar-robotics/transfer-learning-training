@@ -79,6 +79,7 @@ class Detection:
         input_detail,
         output_detail,
         collection,
+        input_data=None,
         imW=1280,
         imH=720,
     ):
@@ -138,6 +139,7 @@ class Detection:
         frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb, (self.width, self.height))
         input_data = np.expand_dims(frame_resized, axis=0)
+        input_data = self.__floating_model(input_data)
         self.interpreter.set_tensor(self.input_detail[0]["index"], input_data)
         self.interpreter.invoke()
         self.scores = self.interpreter.get_tensor(  # noqa
@@ -149,6 +151,27 @@ class Detection:
         self.classes = self.interpreter.get_tensor(  # noqa
             self.output_detail[self.classes_idx]["index"]
         )[0]
+
+    def __floating_model(self, input_data):
+        """Normalize input data to float type
+
+        Args:
+            input_data: Input data
+            input_details: Input details
+
+        Returns:
+            input_data: Normalized input data
+        """
+        floating_model = self.input_detail[0]["dtype"] == np.float32
+
+        input_mean = 127.5
+        input_std = 127.5
+        # floating model (i.e. if model is non-quantized)
+        if floating_model:
+            input_data = (np.float32(input_data) - input_mean) / input_std
+            return input_data
+        else:
+            return input_data
 
     def __retreive_info(self, object_name) -> dict:
         """
@@ -164,16 +187,18 @@ class Detection:
         query = {"type": object_name}
         items_info = self.collection.find_one(query)
         all_info_dict = {}
-        for key, value in items_info.items():
-            # Save each key-value pair into the dictionary
-            if key != "_id" and key != "type":
-                all_info_dict[key] = value
+        if items_info:
+            for key, value in items_info.items():
+                # Save each key-value pair into the dictionary
+                if key != "_id" and key != "type":
+                    all_info_dict[key] = value
         return all_info_dict
 
     def analyze(self, frame1):
         self.frame = frame1.copy()
         self.interpret()
-        processed_frame = self.__make_boxes()
+
+        processed_frame = self.make_boxes()
         return processed_frame
 
     def draw_framerate(self, frame_rate_calc):
@@ -189,7 +214,7 @@ class Detection:
             cv2.LINE_AA,
         )
 
-    def __make_boxes(self):
+    def make_boxes(self):
         """Draw bounding boxes on the frame and display the information
 
         Args:
@@ -200,7 +225,7 @@ class Detection:
             frame: Frame with bounding boxes
         """
         for i in range(len(self.scores)):
-            if (self.scores[i] > 0.5) and (
+            if (self.scores[i] > 0.6) and (
                 self.scores[i] <= 1.0
             ):  # Confidence threshold
 
@@ -242,24 +267,25 @@ class Detection:
                     (0, 0, 0),
                     2,
                 )  # Draw label text
-                for key, value in dict_info.items():
-                    # Generate the text for this key-value pair
-                    info_text = "{}: {}".format(key, value)
-                    # Display this key-value pair on the frame
-                    cv2.putText(
-                        self.frame,
-                        info_text,
-                        (int(xmin), int(y_offset)),
-                        cv2.FONT_ITALIC,
-                        0.5,  # Yo
-                        (
-                            255,
-                            0,
-                            0,
-                        ),
-                        2,
-                    )
-                    y_offset -= 20
+                if dict_info:
+                    for key, value in dict_info.items():
+                        # Generate the text for this key-value pair
+                        info_text = "{}: {}".format(key, value)
+                        # Display this key-value pair on the frame
+                        cv2.putText(
+                            self.frame,
+                            info_text,
+                            (int(xmin), int(y_offset)),
+                            cv2.FONT_ITALIC,
+                            0.5,  # Yo
+                            (
+                                255,
+                                0,
+                                0,
+                            ),
+                            2,
+                        )
+                        y_offset -= 20
         return self.frame
 
     def calculate_framerate(self):

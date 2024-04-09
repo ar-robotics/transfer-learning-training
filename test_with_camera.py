@@ -13,7 +13,7 @@ def load_labels(path):
     return labels
 
 
-labels = load_labels("transfer-learning-training/labels.txt")
+labels = load_labels("Object_Detection-pi/pre-trained model/labels/labels-ppl.txt")
 
 
 class Interpreter:
@@ -66,21 +66,27 @@ class Detection:
             classes: Class indices
         """
         input_frame = cv2.resize(self.frame, (self.width, self.height))
-        input_frame = np.expand_dims(input_frame, axis=0).astype(np.uint8)
+        input_frame = np.expand_dims(input_frame, axis=0).astype(np.float32)
         self.interpreter.set_tensor(self.input_detail[0]["index"], input_frame)
         self.interpreter.invoke()
-        # self.num_detections = int(
-        #     self.interpreter.get_tensor(self.output_detail[2]["index"])[0]
-        # )
-        self.scores = self.interpreter.get_tensor(  # noqa
-            self.output_detail[0]["index"]
-        )[0]
-        self.boxes = self.interpreter.get_tensor(  # noqa
-            self.output_detail[1]["index"]
-        )[0]
-        self.classes = self.interpreter.get_tensor(  # noqa
-            self.output_detail[3]["index"]
-        )[0]
+        # # self.num_detections = int(
+        # #     self.interpreter.get_tensor(self.output_detail[2]["index"])[0]
+        # # )
+        # self.scores = self.interpreter.get_tensor(  # noqa
+        #     self.output_detail[0]["index"]
+        # )[0]
+        # self.boxes = self.interpreter.get_tensor(  # noqa
+        #     self.output_detail[1]["index"]
+        # )[0]
+        # self.classes = self.interpreter.get_tensor(  # noqa
+        #     self.output_detail[3]["index"]
+        # )[0]
+        # self.details = self.interpreter.get_tensor(  # noqa
+        #     self.output_detail[0]["index"]
+        # )[0]
+        self.boxes = self.output_detail[:, :, :4]  # Bounding boxes
+        self.classes = self.output_detail[:, :, 4]  # Class indices
+        self.scores = self.output_detail[:, :, 5]  # Confidence scores
 
     def make_boxes(self):
         """Draw the boxes on the frame and label them
@@ -97,13 +103,13 @@ class Detection:
             if self.scores[i] > 0.4:  # Confidence threshold
                 ymin, xmin, ymax, xmax = self.boxes[i]
                 (left, right, top, bottom) = (
-                    xmin * frame.shape[1],
-                    xmax * frame.shape[1],
-                    ymin * frame.shape[0],
-                    ymax * frame.shape[0],
+                    xmin * self.frame.shape[1],
+                    xmax * self.frame.shape[1],
+                    ymin * self.frame.shape[0],
+                    ymax * self.frame.shape[0],
                 )
                 cv2.rectangle(
-                    frame,
+                    self.frame,
                     (int(left), int(top)),
                     (int(right), int(bottom)),
                     (0, 255, 0),
@@ -120,7 +126,7 @@ class Detection:
 
                 # Draw the first line of text
                 cv2.putText(
-                    frame,
+                    self.frame,
                     label_line_1,
                     (int(left), text_y_start),
                     cv2.FONT_HERSHEY_SIMPLEX,
@@ -129,13 +135,14 @@ class Detection:
                     2,
                 )
 
-        return frame
+        return self.frame
 
 
 interpreter = Interpreter(
-    "transfer-learning-training/tflite_models/people_detection_2.tflite"
+    "Object_Detection-pi/pre-trained model/tflite-models/best_float32.tflite"
 )
 input_details, output_details, height, width = interpreter.get_details()
+print(output_details)
 interpreter = interpreter.get_interpreter()
 
 
@@ -147,6 +154,7 @@ while True:
     detection_obj = Detection(
         frame, height, width, interpreter, input_details, output_details
     )
+
     detection_obj.interpret()
     frame = detection_obj.make_boxes()
 

@@ -1,1 +1,2 @@
-Person
+tight-bolt
+loose-bolt

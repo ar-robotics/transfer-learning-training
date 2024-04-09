@@ -91,6 +91,7 @@ def floating_model(input_data, input_details):
 
 
 def main():
+    # return
     videostream = VideoStream(resolution=(imW, imH), framerate=30).start()
     time.sleep(1)
     db_name = "mongodbVSCodePlaygroundDB"
@@ -102,6 +103,7 @@ def main():
 
     interpreter = extractor.get_interpreter()
     input_details, output_details, height, width = extractor.get_details()
+    print(output_details)
     detection_obj = Detection(
         labels,
         height,
@@ -120,7 +122,8 @@ def main():
         # Grab frame from video stream
         frame1 = videostream.read()
         # Acquire frame and resize to expected shape [1xHxWx3]
-        frame = detection_obj.analyze(frame1)
+        frame = frame1.copy()
+        frame = detection_obj.analyze(frame)
 
         detection_obj.draw_framerate(frame_rate_calc)
 
