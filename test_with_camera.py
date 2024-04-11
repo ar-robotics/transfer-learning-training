@@ -1,5 +1,8 @@
+import os
 import cv2
 import numpy as np
+
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 import tensorflow as tf
 
 
@@ -13,7 +16,9 @@ def load_labels(path):
     return labels
 
 
-labels = load_labels("Object_Detection-pi/pre-trained model/labels/labels-ppl.txt")
+labels = load_labels(
+    "C:/Users/aditi/Documents/Bachelor_p/Object_Detection-pi/pre-trained model/labels/labels-ppl.txt"
+)
 
 
 class Interpreter:
@@ -48,6 +53,41 @@ class Detection:
         self.classes = None
         self.num_detections = None
 
+    def nms(self, boxes, scores, iou_threshold):
+        # Convert boxes from [x_center, y_center, width, height] to [x_min, y_min, x_max, y_max]
+        x_center, y_center, width, height = (
+            boxes[:, 0],
+            boxes[:, 1],
+            boxes[:, 2],
+            boxes[:, 3],
+        )
+        x_min = x_center - width / 2
+        y_min = y_center - height / 2
+        x_max = x_center + width / 2
+        y_max = y_center + height / 2
+
+        areas = (x_max - x_min) * (y_max - y_min)
+        order = scores.argsort()[::-1]
+
+        keep = []
+        while order.size > 0:
+            i = order[0]
+            keep.append(i)
+            xx1 = np.maximum(x_min[i], x_min[order[1:]])
+            yy1 = np.maximum(y_min[i], y_min[order[1:]])
+            xx2 = np.minimum(x_max[i], x_max[order[1:]])
+            yy2 = np.minimum(y_max[i], y_max[order[1:]])
+
+            w = np.maximum(0.0, xx2 - xx1)
+            h = np.maximum(0.0, yy2 - yy1)
+            intersection = w * h
+            iou = intersection / (areas[i] + areas[order[1:]] - intersection)
+
+            inds = np.where(iou <= iou_threshold)[0]
+            order = order[inds + 1]
+
+        return keep
+
     def interpret(self):
         """Interpret the frame and make predictions
 
@@ -69,80 +109,72 @@ class Detection:
         input_frame = np.expand_dims(input_frame, axis=0).astype(np.float32)
         self.interpreter.set_tensor(self.input_detail[0]["index"], input_frame)
         self.interpreter.invoke()
-        # # self.num_detections = int(
-        # #     self.interpreter.get_tensor(self.output_detail[2]["index"])[0]
-        # # )
-        # self.scores = self.interpreter.get_tensor(  # noqa
-        #     self.output_detail[0]["index"]
-        # )[0]
-        # self.boxes = self.interpreter.get_tensor(  # noqa
-        #     self.output_detail[1]["index"]
-        # )[0]
-        # self.classes = self.interpreter.get_tensor(  # noqa
-        #     self.output_detail[3]["index"]
-        # )[0]
-        # self.details = self.interpreter.get_tensor(  # noqa
-        #     self.output_detail[0]["index"]
-        # )[0]
-        self.boxes = self.output_detail[:, :, :4]  # Bounding boxes
-        self.classes = self.output_detail[:, :, 4]  # Class indices
-        self.scores = self.output_detail[:, :, 5]  # Confidence scores
+        output_data = self.interpreter.get_tensor(
+            self.output_detail[0]["index"]
+        )  # get tensor  x(1, 25200, 7)
+        xyxy, classes, scores = self.YOLOdetect(output_data)
 
-    def make_boxes(self):
-        """Draw the boxes on the frame and label them
+        boxes_array = np.array(xyxy).T  # Transpose to get shape [num_boxes, 4]
 
-        Args:
-            num_detections: Number of detections
-            detection_boxes: Bounding box coordinates
-            detection_classes: Class indices
-            detection_scores: Confidence scores
+        # Apply NMS
+        keep_idxs = self.nms(
+            boxes_array, scores, iou_threshold=0.5
+        )  # Adjust IoU threshold as needed
 
-        Returns:
-            Frame with bounding boxes and labels"""
-        for i in range(len(self.scores)):
-            if self.scores[i] > 0.4:  # Confidence threshold
-                ymin, xmin, ymax, xmax = self.boxes[i]
-                (left, right, top, bottom) = (
-                    xmin * self.frame.shape[1],
-                    xmax * self.frame.shape[1],
-                    ymin * self.frame.shape[0],
-                    ymax * self.frame.shape[0],
-                )
-                cv2.rectangle(
-                    self.frame,
-                    (int(left), int(top)),
-                    (int(right), int(bottom)),
-                    (0, 255, 0),
-                    2,  # noqa
-                )
-                object_name = labels[int(self.classes[i])]
-                label_line_1 = f"{object_name}"  # , Age: {age}"
+        # Filter boxes, scores, and classes based on NMS
+        filtered_boxes = boxes_array[keep_idxs]
+        filtered_scores = scores[keep_idxs]
+        filtered_classes = np.array(classes)[keep_idxs]
 
-                (text_width, text_height), baseLine = cv2.getTextSize(
-                    label_line_1, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2
-                )
-                # Set the starting Y position for the text
-                text_y_start = int(top - round(1.5 * text_height))
+        # Update self.boxes, self.scores, self.classes with filtered detections
+        self.boxes = filtered_boxes
+        self.scores = filtered_scores
+        self.classes = filtered_classes
+        return self.make_boxes_2()
 
-                # Draw the first line of text
-                cv2.putText(
-                    self.frame,
-                    label_line_1,
-                    (int(left), text_y_start),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,
-                    (0, 0, 0),
-                    2,
-                )
+    def classFilter(self, classdata):
 
+        classes = []  # create a list
+        for i in range(classdata.shape[0]):  # loop through all predictions
+            classes.append(
+                classdata[i].argmax()
+            )  # get the best classification location
+        return classes  # return classes (int)
+
+    def YOLOdetect(self, output_data):
+        output_data = output_data[0]  # x(1, 25200, 7) to x(25200, 7)
+        boxes = np.squeeze(output_data[..., :4])  # boxes  [25200, 4]
+        scores = np.squeeze(output_data[..., 4:5])  # confidences  [25200, 1]
+        classes = self.classFilter(output_data[..., 5:])  # get classes
+        # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
+        x, y, w, h = boxes[..., 0], boxes[..., 1], boxes[..., 2], boxes[..., 3]  # xywh
+        xyxy = [x - w / 2, y - h / 2, x + w / 2, y + h / 2]  # xywh to xyxy   [4, 25200]
+
+        return (
+            xyxy,
+            classes,
+            scores,
+        )
+
+    def make_boxes_2(self):
+        num_detections = len(self.scores)
+        for i in range(num_detections):
+            # Now, we ensure we're only accessing valid indices
+            if (self.scores[i] > 0.3) and (self.scores[i] <= 1.0):
+                # Assuming self.boxes is now [num_detections, 4] with [xmin, ymin, xmax, ymax] for each detection
+                xmin, ymin, xmax, ymax = self.boxes[i]
+                xmin = int(max(1, xmin * self.width))
+                ymin = int(max(1, ymin * self.height))
+                xmax = int(min(self.height, xmax * self.width))
+                ymax = int(min(self.width, ymax * self.height))
+                cv2.rectangle(self.frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
         return self.frame
 
 
 interpreter = Interpreter(
-    "Object_Detection-pi/pre-trained model/tflite-models/best_float32.tflite"
+    "C:/Users/aditi/Downloads/all_ml_related/yolov5-20240410T063421Z-001/yolov5/runs/train/exp/weights/best-fp16.tflite "
 )
 input_details, output_details, height, width = interpreter.get_details()
-print(output_details)
 interpreter = interpreter.get_interpreter()
 
 
@@ -155,9 +187,9 @@ while True:
         frame, height, width, interpreter, input_details, output_details
     )
 
-    detection_obj.interpret()
-    frame = detection_obj.make_boxes()
+    frame = detection_obj.interpret()
 
+    # frame = detection_obj.make_boxes()
     # Display the resulting frame
     cv2.imshow("Object Detection", frame)
 

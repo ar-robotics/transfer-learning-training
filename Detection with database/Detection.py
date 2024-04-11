@@ -142,15 +142,19 @@ class Detection:
         input_data = self.__floating_model(input_data)
         self.interpreter.set_tensor(self.input_detail[0]["index"], input_data)
         self.interpreter.invoke()
-        self.scores = self.interpreter.get_tensor(  # noqa
-            self.output_detail[self.scores_idx]["index"]
-        )[0]
-        self.boxes = self.interpreter.get_tensor(  # noqa
-            self.output_detail[self.boxes_idx]["index"]
-        )[0]
-        self.classes = self.interpreter.get_tensor(  # noqa
-            self.output_detail[self.classes_idx]["index"]
-        )[0]
+        # self.scores = self.interpreter.get_tensor(  # noqa
+        #     self.output_detail[self.scores_idx]["index"]
+        # )[0]
+        # self.boxes = self.interpreter.get_tensor(  # noqa
+        #     self.output_detail[self.boxes_idx]["index"]
+        # )[0]
+        # self.classes = self.interpreter.get_tensor(  # noqa
+        #     self.output_detail[self.classes_idx]["index"]
+        # )[0]
+        output_data = self.interpreter.get_tensor(
+            self.output_detail[0]["index"]
+        )  # noqa
+        print(output_data)
 
     def __floating_model(self, input_data):
         """Normalize input data to float type
