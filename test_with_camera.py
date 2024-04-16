@@ -156,6 +156,18 @@ class Detection:
             scores,
         )
 
+    def make_boxes(self, scores, xyxy):
+        for i in range(len(scores)):
+            if (scores[i] > 0.1) and (scores[i] <= 1.0):
+                H = self.frame.shape[0]
+                W = self.frame.shape[1]
+                xmin = int(max(1, (xyxy[0][i] * W)))
+                ymin = int(max(1, (xyxy[1][i] * H)))
+                xmax = int(min(H, (xyxy[2][i] * W)))
+                ymax = int(min(W, (xyxy[3][i] * H)))
+
+                cv2.rectangle(self.frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
+
     def make_boxes_2(self):
         num_detections = len(self.scores)
         for i in range(num_detections):
