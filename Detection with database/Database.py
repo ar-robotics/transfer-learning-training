@@ -34,13 +34,6 @@ class Database:
 
         return self.collection
 
-    def insert_data(self, data):
-        """Insert data into the collection
-
-        Args:
-            data: Data to be inserted
-        """
-        self.collection.insert_one(data)
 
     def find_data(self, query):
         """Find data in the collection
