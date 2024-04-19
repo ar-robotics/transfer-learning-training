@@ -1,341 +1,553 @@
-# import argparse
-
-# import cv2
-# import numpy as np
-# from tensorflow.lite import interpreter as tflite
-
-# from ultralytics.utils import ASSETS, yaml_load
-# from ultralytics.utils.checks import check_yaml
-
-
-# class Yolov8TFLite:
-
-#     def __init__(self, tflite_model, input_image, confidence_thres, iou_thres):
-#         """
-#         Initializes an instance of the Yolov8TFLite class.
-
-#         Args:
-#             tflite_model: Path to the TFLite model.
-#             input_image: Path to the input image.
-#             confidence_thres: Confidence threshold for filtering detections.
-#             iou_thres: IoU (Intersection over Union) threshold for non-maximum suppression.
-#         """
-#         self.tflite_model = tflite_model
-#         self.input_image = input_image
-#         self.confidence_thres = confidence_thres
-#         self.iou_thres = iou_thres
-
-#         # Load the class names from the COCO dataset
-#         self.classes = yaml_load(check_yaml("coco128.yaml"))["names"]
-
-#         # Generate a color palette for the classes
-#         self.color_palette = np.random.uniform(0, 255, size=(len(self.classes), 3))
-
-#     def draw_detections(self, img, box, score, class_id):
-#         """
-#         Draws bounding boxes and labels on the input image based on the detected objects.
-
-#         Args:
-#             img: The input image to draw detections on.
-#             box: Detected bounding box.
-#             score: Corresponding detection score.
-#             class_id: Class ID for the detected object.
-
-#         Returns:
-#             None
-#         """
-
-#         # Extract the coordinates of the bounding box
-#         x1, y1, w, h = box
-
-#         # Retrieve the color for the class ID
-#         color = self.color_palette[class_id]
-
-#         # Draw the bounding box on the image
-#         cv2.rectangle(img, (int(x1), int(y1)), (int(x1 + w), int(y1 + h)), color, 2)
-
-#         # Create the label text with class name and score
-#         label = f"{self.classes[class_id]}: {score:.2f}"
-
-#         # Calculate the dimensions of the label text
-#         (label_width, label_height), _ = cv2.getTextSize(
-#             label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
-#         )
-
-#         # Calculate the position of the label text
-#         label_x = x1
-#         label_y = y1 - 10 if y1 - 10 > label_height else y1 + 10
-
-#         # Draw a filled rectangle as the background for the label text
-#         cv2.rectangle(
-#             img,
-#             (label_x, label_y - label_height),
-#             (label_x + label_width, label_y + label_height),
-#             color,
-#             cv2.FILLED,
-#         )
-
-#         # Draw the label text on the image
-#         cv2.putText(
-#             img,
-#             label,
-#             (label_x, label_y),
-#             cv2.FONT_HERSHEY_SIMPLEX,
-#             0.5,
-#             (0, 0, 0),
-#             1,
-#             cv2.LINE_AA,
-#         )
-
-#     def preprocess(self):
-#         """
-#         Preprocesses the input image before performing inference.
-
-#         Returns:
-#             image_data: Preprocessed image data ready for inference.
-#         """
-#         # Read the input image using OpenCV
-#         self.img = cv2.imread(self.input_image)
-
-#         # Get the height and width of the input image
-#         self.img_height, self.img_width = self.img.shape[:2]
-
-#         # Convert the image color space from BGR to RGB
-#         img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
-
-#         # Resize the image to match the input shape (320x320 for this case)
-#         img = cv2.resize(img, (self.input_width, self.input_height))
-
-#         # Normalize the image data by dividing it by 255.0
-#         image_data = np.array(img) / 255.0
-
-#         # Transpose the image to have the channel dimension as the first dimension
-#         # image_data = np.transpose(image_data, (2, 0, 1))  # Channel first
-
-#         # Quantize the image data to int8
-#         image_data = np.expand_dims(image_data, axis=0).astype(np.float32)
-
-#         # Return the preprocessed image data
-#         return image_data
-
-#     def postprocess(self, input_image, output):
-
-#         return input_image
-
-#     def main(self):
-#         """
-#         Performs inference using a TFLite model and returns the output image with drawn detections.
-
-#         Returns:
-#             output_img: The output image with drawn detections.
-#         """
-#         # Create an interpreter for the TFLite model
-#         interpreter = tflite.Interpreter(model_path=self.tflite_model)
-#         interpreter.allocate_tensors()
-
-#         # Get the model inputs
-#         input_details = interpreter.get_input_details()
-#         output_details = interpreter.get_output_details()
-
-#         # Store the shape of the input for later use
-#         input_shape = input_details[0]["shape"]
-#         self.input_width = input_shape[1]
-#         self.input_height = input_shape[2]
-
-#         # Preprocess the image data
-#         img_data = self.preprocess()
-
-#         # Set the input tensor to the interpreter
-#         interpreter.set_tensor(input_details[0]["index"], img_data)
-
-#         # Run inference
-#         interpreter.invoke()
-
-#         # Get the output tensor from the interpreter
-#         output = interpreter.get_tensor(output_details[0]["index"])
-
-#         # Perform post-processing on the outputs to obtain output image.
-#         return self.postprocess(self.img, output)  # output image
-
-
-# if __name__ == "__main__":
-#     # Create an argument parser to handle command-line arguments
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument(
-#         "--model",
-#         type=str,
-#         default="yolov8n_float32.tflite",
-#         help="Input your TFLite model.",
-#     )
-#     parser.add_argument(
-#         "--img", type=str, default=str(ASSETS / "bus.jpg"), help="Path to input image."
-#     )
-#     parser.add_argument(
-#         "--conf-thres", type=float, default=0.5, help="Confidence threshold"
-#     )
-#     parser.add_argument(
-#         "--iou-thres", type=float, default=0.5, help="NMS IoU threshold"
-#     )
-#     args = parser.parse_args()
-
-#     # Create an instance of the Yolov8TFLite class with the specified arguments
-#     detection = Yolov8TFLite(args.model, args.img, args.conf_thres, args.iou_thres)
-
-#     # Perform object detection and obtain the output image
-#     output_image = detection.main()
-
-#     # Display the output image in a window
-#     cv2.namedWindow("Output", cv2.WINDOW_NORMAL)
-#     cv2.imshow("Output", output_image)
-
-#     # Wait for a key press to exit
-#     cv2.waitKey(0)
-
-
-import argparse
-import cv2
+import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow as tf
-
-# from ultralytics.utils import yaml_load, check_yaml
 
 
-class Yolov8TFLite:
-    def __init__(self, tflite_model, confidence_thres, iou_thres):
-        """
-        Initializes an instance of the Yolov8TFLite class to use with video streams.
-        """
-        self.tflite_model = tflite_model
-        self.confidence_thres = confidence_thres
-        self.iou_thres = iou_thres
-        # self.classes = yaml_load(check_yaml("coco128.yaml"))["names"]
-        self.classes = {"0": "person"}
-        self.color_palette = np.random.uniform(0, 255, size=(len(self.classes), 3))
+total_epochs = np.array(
+    [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+    ]
+)
+total_loss = np.array(
+    [
+        5.5539,
+        1.4140,
+        1.0666,
+        0.7923,
+        0.6459,
+        0.5366,
+        0.4647,
+        0.4246,
+        0.3744,
+        0.3322,
+        0.3027,
+        0.2860,
+        0.2867,
+        0.2719,
+        0.2637,
+        0.2635,
+        0.2324,
+        0.2134,
+        0.2082,
+        0.2218,
+        0.1997,
+        0.1840,
+        0.1805,
+        0.1857,
+        0.1765,
+        0.1729,
+        0.1663,
+        0.1546,
+        0.1697,
+        0.1397,
+        0.1565,
+        0.1567,
+        0.1513,
+        0.1542,
+        0.1538,
+        0.1664,
+        0.1573,
+        0.1532,
+        0.1606,
+        0.1513,
+        0.1246,
+        0.1398,
+        0.1540,
+        0.1439,
+        0.1295,
+        0.1232,
+        0.1373,
+        0.1264,
+        0.1150,
+        0.1220,
+    ]
+)
+cls_loss = np.array(
+    [
+        5.0689,
+        0.9963,
+        0.7319,
+        0.5153,
+        0.4111,
+        0.3336,
+        0.2861,
+        0.2553,
+        0.2220,
+        0.1918,
+        0.1724,
+        0.1590,
+        0.1623,
+        0.1500,
+        0.1426,
+        0.1430,
+        0.1228,
+        0.1092,
+        0.1064,
+        0.1132,
+        0.0994,
+        0.0892,
+        0.0864,
+        0.0869,
+        0.0827,
+        0.0803,
+        0.0763,
+        0.0672,
+        0.0785,
+        0.0575,
+        0.0683,
+        0.0673,
+        0.0644,
+        0.0650,
+        0.0668,
+        0.0734,
+        0.0672,
+        0.0651,
+        0.0705,
+        0.0626,
+        0.0447,
+        0.0560,
+        0.0636,
+        0.0594,
+        0.0500,
+        0.0435,
+        0.0528,
+        0.0471,
+        0.0390,
+        0.0444,
+    ]
+)
+box_loss = np.array(
+    [
+        0.0086,
+        0.0073,
+        0.0056,
+        0.0044,
+        0.0036,
+        0.0030,
+        0.0025,
+        0.0023,
+        0.0019,
+        0.0017,
+        0.0015,
+        0.0014,
+        0.0014,
+        0.0013,
+        0.0013,
+        0.0013,
+        0.0011,
+        9.8348e-04,
+        9.3268e-04,
+        0.0011,
+        9.0553e-04,
+        7.9451e-04,
+        7.8160e-04,
+        8.7382e-04,
+        7.7420e-04,
+        7.5035e-04,
+        6.9876e-04,
+        6.4627e-04,
+        7.2384e-04,
+        5.4149e-04,
+        6.6409e-04,
+        6.8615e-04,
+        6.3685e-04,
+        6.8252e-04,
+        6.3997e-04,
+        7.5846e-04,
+        7.0088e-04,
+        6.6092e-04,
+        7.0036e-04,
+        6.7240e-04,
+        4.9650e-04,
+        5.7322e-04,
+        7.0673e-04,
+        5.8977e-04,
+        4.8739e-04,
+        4.9310e-04,
+        5.8935e-04,
+        4.8371e-04,
+        4.1917e-04,
+        4.5080e-04,
+    ]
+)
+print(len(box_loss))
+model_loss = np.array(
+    [
+        5.4989,
+        1.3590,
+        1.0116,
+        0.7373,
+        0.5909,
+        0.4816,
+        0.4097,
+        0.3695,
+        0.3193,
+        0.2772,
+        0.2476,
+        0.2310,
+        0.2316,
+        0.2169,
+        0.2086,
+        0.2084,
+        0.1774,
+        0.1583,
+        0.1531,
+        0.1667,
+        0.1446,
+        0.1289,
+        0.1254,
+        0.1306,
+        0.1214,
+        0.1178,
+        0.1112,
+        0.0995,
+        0.1146,
+        0.0846,
+        0.1015,
+        0.1016,
+        0.0962,
+        0.0992,
+        0.0988,
+        0.1113,
+        0.1023,
+        0.0981,
+        0.1055,
+        0.0963,
+        0.0696,
+        0.0847,
+        0.0989,
+        0.0889,
+        0.0822,
+        0.0681,
+        0.0744,
+        0.0822,
+        0.0713,
+        0.0600,
+    ]
+)
+val_total_loss = np.array(
+    [
+        0.9363,
+        0.8953,
+        0.7628,
+        0.7328,
+        0.6905,
+        0.7232,
+        0.6277,
+        0.6450,
+        0.6304,
+        0.6299,
+        0.6212,
+        0.6604,
+        0.6459,
+        0.6581,
+        0.6696,
+        0.6855,
+        0.6480,
+        0.6621,
+        0.6903,
+        0.6749,
+        0.7200,
+        0.6921,
+        0.7082,
+        0.6867,
+        0.7415,
+        0.7285,
+        0.7476,
+        0.7373,
+        0.7531,
+        0.7550,
+        0.7491,
+        0.7558,
+        0.7492,
+        0.7594,
+        0.7570,
+        0.7462,
+        0.7874,
+        0.7869,
+        0.8196,
+        0.7682,
+        0.7928,
+        0.7915,
+        0.7714,
+        0.7729,
+        0.8151,
+        0.8123,
+        0.8149,
+        0.8273,
+        0.8211,
+        0.8413,
+    ]
+)
+val_cls_loss = np.array(
+    [
+        0.6694,
+        0.5793,
+        0.4543,
+        0.4268,
+        0.3907,
+        0.4060,
+        0.3230,
+        0.3381,
+        0.3183,
+        0.3126,
+        0.3095,
+        0.3332,
+        0.3168,
+        0.3326,
+        0.3476,
+        0.3601,
+        0.3302,
+        0.3383,
+        0.3633,
+        0.3500,
+        0.3815,
+        0.3703,
+        0.3831,
+        0.3708,
+        0.4111,
+        0.3985,
+        0.4172,
+        0.4090,
+        0.4228,
+        0.4281,
+        0.4211,
+        0.4182,
+        0.4168,
+        0.4234,
+        0.4212,
+        0.4087,
+        0.4395,
+        0.4541,
+        0.4710,
+        0.4303,
+        0.4596,
+        0.4526,
+        0.4324,
+        0.4394,
+        0.4674,
+        0.4680,
+        0.4747,
+        0.4877,
+        0.4762,
+        0.4963,
+    ]
+)
+val_box_loss = np.array(
+    [
+        0.0042,
+        0.0052,
+        0.0051,
+        0.0050,
+        0.0049,
+        0.0052,
+        0.0050,
+        0.0050,
+        0.0051,
+        0.0052,
+        0.0051,
+        0.0054,
+        0.0055,
+        0.0054,
+        0.0053,
+        0.0054,
+        0.0053,
+        0.0054,
+        0.0054,
+        0.0054,
+        0.0057,
+        0.0053,
+        0.0054,
+        0.0052,
+        0.0055,
+        0.0055,
+        0.0055,
+        0.0055,
+        0.0055,
+        0.0054,
+        0.0055,
+        0.0057,
+        0.0056,
+        0.0057,
+        0.0056,
+        0.0056,
+        0.0055,
+        0.0059,
+        0.0056,
+        0.0057,
+        0.0056,
+        0.0057,
+        0.0057,
+        0.0056,
+        0.0057,
+        0.0058,
+        0.0057,
+        0.0057,
+        0.0058,
+        0.0058,
+    ]
+)
+val_model_loss = np.array(
+    [
+        0.8813,
+        0.8404,
+        0.7078,
+        0.6778,
+        0.6355,
+        0.6682,
+        0.5727,
+        0.5900,
+        0.5754,
+        0.5748,
+        0.5662,
+        0.6053,
+        0.5908,
+        0.6031,
+        0.6145,
+        0.6304,
+        0.5929,
+        0.6071,
+        0.6352,
+        0.6198,
+        0.6649,
+        0.6371,
+        0.6531,
+        0.6316,
+        0.6864,
+        0.6735,
+        0.6925,
+        0.6823,
+        0.6980,
+        0.6999,
+        0.6940,
+        0.7008,
+        0.6942,
+        0.7043,
+        0.7020,
+        0.6911,
+        0.7323,
+        0.7318,
+        0.7646,
+        0.7131,
+        0.7377,
+        0.7364,
+        0.7164,
+        0.7179,
+        0.7600,
+        0.7573,
+        0.7598,
+        0.7723,
+        0.7661,
+        0.7863,
+    ]
+)
 
-        # Initialize TFLite interpreter
-        self.interpreter = tf.lite.Interpreter(model_path=self.tflite_model)
-        self.interpreter.allocate_tensors()
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
+fig, axs = plt.subplots(2, 4, figsize=(20, 10))
 
-        # Setup input size
-        self.input_height = self.input_details[0]["shape"][1]
-        self.input_width = self.input_details[0]["shape"][2]
+# Total loss
+axs[0, 0].plot(total_epochs, total_loss, label="total_loss")
+axs[0, 0].set_title("Total Loss")
+axs[0, 0].set_xlabel("Epochs")
+axs[0, 0].set_ylabel("Loss")
+axs[0, 0].legend()
 
-    def process_frame(self, frame):
-        """
-        Process a single video frame for object detection.
-        """
-        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = cv2.resize(img, (self.input_width, self.input_height))
-        img_data = np.expand_dims(img, axis=0).astype(np.float32) / 255.0
+# Classification loss
+axs[0, 1].plot(total_epochs, cls_loss, label="cls_loss", color="orange")
+axs[0, 1].set_title("Classification Loss")
+axs[0, 1].set_xlabel("Epochs")
+axs[0, 1].set_ylabel("Loss")
+axs[0, 1].legend()
 
-        self.interpreter.set_tensor(self.input_details[0]["index"], img_data)
-        self.interpreter.invoke()
-        output_data = self.interpreter.get_tensor(self.output_details[0]["index"])[0]
-        self.postprocess(frame, output_data)
-        return frame
+# Box loss
+axs[0, 2].plot(total_epochs, box_loss, label="box_loss", color="green")
+axs[0, 2].set_title("Box Loss")
+axs[0, 2].set_xlabel("Epochs")
+axs[0, 2].set_ylabel("Loss")
+axs[0, 2].legend()
 
-    def postprocess(self, frame, output):
-        """
-        Performs post-processing on the model's output to extract bounding boxes, scores, and class IDs.
+# Model loss
+axs[0, 3].plot(total_epochs, model_loss, label="model_loss", color="red")
+axs[0, 3].set_title("Model Loss")
+axs[0, 3].set_xlabel("Epochs")
+axs[0, 3].set_ylabel("Loss")
+axs[0, 3].legend()
 
-        Args:
-            input_image (numpy.ndarray): The input image.
-            output (numpy.ndarray): The output of the model.
+# Validation total loss
+axs[1, 0].plot(total_epochs, val_total_loss, label="val_total_loss", color="purple")
+axs[1, 0].set_title("Validation Total Loss")
+axs[1, 0].set_xlabel("Epochs")
+axs[1, 0].set_ylabel("Loss")
+axs[1, 0].legend()
 
-        Returns:
-            numpy.ndarray: The input image with detections drawn on it.
-        """
+# Validation classification loss
+axs[1, 1].plot(total_epochs, val_cls_loss, label="val_cls_loss", color="cyan")
+axs[1, 1].set_title("Validation Classification Loss")
+axs[1, 1].set_xlabel("Epochs")
+axs[1, 1].set_ylabel("Loss")
+axs[1, 1].legend()
 
-        # Transpose and squeeze the output to match the expected shape
-        outputs = np.transpose(np.squeeze(output[0]))
+# Validation box loss
+axs[1, 2].plot(total_epochs, val_box_loss, label="val_box_loss", color="magenta")
+axs[1, 2].set_title("Validation Box Loss")
+axs[1, 2].set_xlabel("Epochs")
+axs[1, 2].set_ylabel("Loss")
+axs[1, 2].legend()
 
-        # Get the number of rows in the outputs array
-        rows = outputs.shape[0]
+# Validation model loss
+axs[1, 3].plot(total_epochs, val_model_loss, label="val_model_loss", color="yellow")
+axs[1, 3].set_title("Validation Model Loss")
+axs[1, 3].set_xlabel("Epochs")
+axs[1, 3].set_ylabel("Loss")
+axs[1, 3].legend()
 
-        # Lists to store the bounding boxes, scores, and class IDs of the detections
-        boxes = []
-        scores = []
-        class_ids = []
-        self.img_width, self.img_height = frame.shape[:2]
-        # Calculate the scaling factors for the bounding box coordinates
-        x_factor = self.img_width / self.input_width
-        y_factor = self.img_height / self.input_height
-
-        # Iterate over each row in the outputs array
-        for i in range(rows):
-            # Extract the class scores from the current row
-            classes_scores = outputs[i][4:]
-
-            # Find the maximum score among the class scores
-            max_score = np.amax(classes_scores)
-
-            # If the maximum score is above the confidence threshold
-            if max_score >= self.confidence_thres:
-                # Get the class ID with the highest score
-                class_id = np.argmax(classes_scores)
-
-                # Extract the bounding box coordinates from the current row
-                x, y, w, h = outputs[i][0], outputs[i][1], outputs[i][2], outputs[i][3]
-
-                # Calculate the scaled coordinates of the bounding box
-                left = int((x - w / 2) * x_factor)
-                top = int((y - h / 2) * y_factor)
-                width = int(w * x_factor)
-                height = int(h * y_factor)
-
-                # Add the class ID, score, and box coordinates to the respective lists
-                class_ids.append(class_id)
-                scores.append(max_score)
-                boxes.append([left, top, width, height])
-
-        # Apply non-maximum suppression to filter out overlapping bounding boxes
-        indices = cv2.dnn.NMSBoxes(boxes, scores, self.confidence_thres, self.iou_thres)
-
-        # Iterate over the selected indices after non-maximum suppression
-        for i in indices:
-            # Get the box, score, and class ID corresponding to the index
-            box = boxes[i]
-            score = scores[i]
-            class_id = class_ids[i]
-
-            # Draw the detection on the input image
-            self.draw_detections(frame, box, score, class_id)
-
-        # Return the modified input image
-
-    def run(self):
-        """
-        Starts the video stream and object detection processing.
-        """
-        cap = cv2.VideoCapture(0)  # Default camera
-        try:
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                processed_frame = self.process_frame(frame)
-                cv2.imshow("Output", processed_frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):  # Press 'q' to quit
-                    break
-        finally:
-            cap.release()
-            cv2.destroyAllWindows()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--model", type=str, default="yolov8n_float32.tflite", help="TFLite model path."
-    )
-    parser.add_argument(
-        "--conf-thres", type=float, default=0.5, help="Confidence threshold."
-    )
-    parser.add_argument(
-        "--iou-thres", type=float, default=0.5, help="IoU threshold for NMS."
-    )
-    args = parser.parse_args()
-    model_path = "C:/Users/aditi/Documents/Bachelor_p/weights/best-fp16.tflite"
-    detector = Yolov8TFLite(model_path, args.conf_thres, args.iou_thres)
-    detector.run()
+# Adjust layout to prevent overlap
+plt.tight_layout()
+plt.show()
