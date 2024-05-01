@@ -5,9 +5,9 @@ import tensorflow as tf
 
 # import argparse
 
-# import contextlib
-from PIL import Image
-from matplotlib import pyplot as plt
+# # import contextlib
+# from PIL import Image
+# from matplotlib import pyplot as plt
 from absl import logging
 
 from tflite_model_maker.config import QuantizationConfig
@@ -108,15 +108,6 @@ class ModelTrainer:
             tflite_filename="i8-People-det.tflite",
             quantization_config=QuantizationConfig.for_int8((self.train_data)),
         )
-
-
-csv_file_path = "transfer-learning-training/csv_files/_annotations.csv"
-images_dir = "valid"  # noqa
-
-data_loader = DataLoader(csv_file_path, images_dir)
-train_data, test_data, validation_data = data_loader.load_data()
-
-
 class ObjectDetector:
     def __init__(self, model, model_path, classes):
         """Creates an ObjectDetector instance.
@@ -205,41 +196,47 @@ class ObjectDetector:
         return original_uint8
 
 
-model_trainer = ModelTrainer(train_data, validation_data)
-model = model_trainer.train_model()
-model_trainer.evaluate_and_export(test_data)
+
+if __name__ == "__main__":
+    csv_file_path = "transfer-learning-training/csv_files/_annotations.csv"
+    images_dir = "valid"  # noqa
+    data_loader = DataLoader(csv_file_path, images_dir)
+    train_data, test_data, validation_data = data_loader.load_data()
+    model_trainer = ModelTrainer(train_data, validation_data)
+    model = model_trainer.train_model()
+    model_trainer.evaluate_and_export(test_data)
 
 
-model_path = "i8-People-det.tflite"
+    #model_path = "tflite_models/model.tflite"
 
 
-local_image_path = "transfer-learning-training/iii.jpg"
-detection_threshold = 0.5
+    # local_image_path = "transfer-learning-training/iii.jpg"
+    # detection_threshold = 0.5
 
-im = Image.open(local_image_path)
-im.thumbnail((512, 512), Image.LANCZOS)
-im.save("saved", "JPEG")
+    # im = Image.open(local_image_path)
+    # im.thumbnail((512, 512), Image.LANCZOS)
+    # im.save("saved", "JPEG")
 
-# Load the TFLite model
-interpreter = tf.lite.Interpreter(model_path=model_path)
-interpreter.allocate_tensors()
-# Load the labels into a list
-classes = ["???"] * model.model_spec.config.num_classes
-label_map = model.model_spec.config.label_map
-for label_id, label_name in label_map.as_dict().items():
-    classes[label_id - 1] = label_name
+    # # Load the TFLite model
+    # interpreter = tf.lite.Interpreter(model_path=model_path)
+    # interpreter.allocate_tensors()
+    # # Load the labels into a list
+    # classes = ["???"] * model.model_spec.config.num_classes
+    # label_map = model.model_spec.config.label_map
+    # for label_id, label_name in label_map.as_dict().items():
+    #     classes[label_id - 1] = label_name
 
-object_d = ObjectDetector(model, model_path, classes)
+    # object_d = ObjectDetector(model, model_path, classes)
 
 
-# Run inference and draw det result on the local copy of the og image
-detection_result_image = object_d.run_odt_and_draw_results(
-    local_image_path, interpreter, threshold=detection_threshold
-)
+    # # Run inference and draw det result on the local copy of the og image
+    # detection_result_image = object_d.run_odt_and_draw_results(
+    #     local_image_path, interpreter, threshold=detection_threshold
+    # )
 
-# Show the detection result
-img2 = Image.fromarray(detection_result_image)
-plt.figure(figsize=(10, 10))
-plt.imshow(detection_result_image)
-plt.axis("off")  # Don't show axes for images
-plt.show()
+    # # Show the detection result
+    # img2 = Image.fromarray(detection_result_image)
+    # plt.figure(figsize=(10, 10))
+    # plt.imshow(detection_result_image)
+    # plt.axis("off")  # Don't show axes for images
+    # plt.show()
