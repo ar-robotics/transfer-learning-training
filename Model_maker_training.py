@@ -46,18 +46,21 @@ class DataLoader:
 
 class ModelTrainer:
     """A class to train the model on the given dataset and evaluate it.
-    Args:
-        train_data: Training dataset, in the form of Dataloader.
-        validation_data: Validation dataset, in the form of Dataloader.
 
     Attributes:
         train_data: Training dataset, in the form of Dataloader.
         validation_data: Validation dataset, in the form of Dataloader.
+        eval: The evaluation result.
         model: The trained model.
-
     """
 
     def __init__(self, train_data, validation_data):
+        """Initializes the ModelTrainer with the given dataset.
+
+        Args:
+            train_data: Training dataset, in the form of Dataloader.
+            validation_data: Validation dataset, in the form of Dataloader.
+        """
         self.train_data = train_data
         self.validation_data = validation_data
         self.eval = None
@@ -65,11 +68,13 @@ class ModelTrainer:
 
     def train_model(self):
         """Fine tunes the EfficientDet-Lite0 model on the given dataset.
+
         Args:
-          train_data: Training dataset, in the form of Dataloader.
-          validation_data: Validation dataset, in the form of Dataloader.
+            train_data: Training dataset, in the form of Dataloader.
+            validation_data: Validation dataset, in the form of Dataloader.
+
         Returns:
-          A trained model.
+            A trained model.
         """
         spec = model_spec.get("efficientdet_lite0")
         self.model = object_detector.create(
@@ -87,8 +92,9 @@ class ModelTrainer:
         test_data,
     ):
         """Evaluates the model and exports it to the export directory.
+
         Args:
-          test_data: Test dataset, in the form of Dataloader.
+            test_data: Test dataset, in the form of Dataloader.
         """
         self.eval = print(self.model.evaluate(test_data))
         self.model.export(export_dir=".")
@@ -108,14 +114,20 @@ class ModelTrainer:
             tflite_filename="i8-People-det.tflite",
             quantization_config=QuantizationConfig.for_int8((self.train_data)),
         )
+
+
 class ObjectDetector:
+    """A class to perform object detection with a given model.
+
+    Attributes:
+        model: The trained model.
+        model_path: The file path to the trained model.
+        classes: A list of class labels.
+        colors: A list of colors for visualization.
+        interpreter: The TensorFlow Lite interpreter.
+    """
+
     def __init__(self, model, model_path, classes):
-        """Creates an ObjectDetector instance.
-        Args:
-            model_path: The file path to the TFLite model.
-            classes: A list of class labels in the order of the model output.
-            The first element should be the class label of index 0.
-        """
         # Define a list of colors for visualization
         self.colors = np.random.randint(
             0, 255, size=(len(classes), 3), dtype=np.uint8
@@ -136,10 +148,12 @@ class ObjectDetector:
 
     def run_odt_and_draw_results(self, image_path, interpreter, threshold=0.5):
         """Run object detection on the input image and draw the results.
+
         Args:
             image_path: The file path to the input image.
             interpreter: The TensorFlow Lite interpreter.
             threshold: The minimum confidence score for detected objects.
+
         Returns:
             A NumPy array of the input image with the detection results.
         """
@@ -196,7 +210,6 @@ class ObjectDetector:
         return original_uint8
 
 
-
 if __name__ == "__main__":
     csv_file_path = "transfer-learning-training/csv_files/_annotations.csv"
     images_dir = "valid"  # noqa
@@ -206,9 +219,7 @@ if __name__ == "__main__":
     model = model_trainer.train_model()
     model_trainer.evaluate_and_export(test_data)
 
-
-    #model_path = "tflite_models/model.tflite"
-
+    # model_path = "tflite_models/model.tflite"
 
     # local_image_path = "transfer-learning-training/iii.jpg"
     # detection_threshold = 0.5
@@ -227,7 +238,6 @@ if __name__ == "__main__":
     #     classes[label_id - 1] = label_name
 
     # object_d = ObjectDetector(model, model_path, classes)
-
 
     # # Run inference and draw det result on the local copy of the og image
     # detection_result_image = object_d.run_odt_and_draw_results(

@@ -1,15 +1,17 @@
+import tensorflow as tf
 import os
 import cv2
 import numpy as np
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-import tensorflow as tf
 
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 
 def load_labels(path):
-    """ Load labels from text file   
-    Args: 
+    """Load labels from text file
+
+    Args:
         path: Path to text file containing labels
+
     Returns:
         labels: List of labels
     """
@@ -17,37 +19,37 @@ def load_labels(path):
         labels = [line.strip() for line in f.readlines()]
     return labels
 
+
 class Interpreter:
-    """ Load TFLite model and allocate tensors
-        Attributes:
-            model_path: Path to TFLite model
-            interpreter: TFLite interpreters       
-        Methods:
-            get_interpreter: Get TFLite interpreter
-            get_details: Get input and output details
+    """Load TFLite model and allocate tensors
+
+    Attributes:
+        model_path: Path to TFLite model
+        interpreter: TFLite interpreter
     """
+
     def __init__(self, model_path):
         self.model_path = model_path
         self.interpreter = tf.lite.Interpreter(model_path=self.model_path)
         self.interpreter.allocate_tensors()
 
     def get_interpreter(self):
-        """ Get TFLite interpreter
-        Args:
-            None        
+        """Get TFLite interpreter
+
         Returns:
-            interpreter: TFLite interpreter"""
+            interpreter: TFLite interpreter
+        """
         return self.interpreter
 
-    def get_details(self):
-        """ Get input and output details
-        Args:
-            None
+    def get_details(self) -> tuple:
+        """Get input and output details
+
         Returns:
             input_details: Input details
             output_details: Output details
             height: Height of input tensor
-            width: Width of input tensor"""
+            width: Width of input tensor
+        """
         input_details = self.interpreter.get_input_details()
         output_details = self.interpreter.get_output_details()
         height = int(input_details[0]["shape"][1])
@@ -56,30 +58,22 @@ class Interpreter:
 
 
 class Detection:
-    """ Detect objects in frame using TFLite model
-        Attributes:
-            frame: Input frame
-            height: Frame height
-            width: Frame width
-            interpreter: TFLite interpreter
-            input_detail: Input details
-            output_detail: Output details
-            scores: Confidence scores
-            boxes: Bounding box coordinates
-            classes: Class indices
-            num_detections: Number of detections
-        
-        Methods:
-            interpret: Interpret the frame and make predictions
-            nms: Non-maximum suppression
-            classFilter: Filter classes
-            YOLOdetect: Detect objects using YOLO
-            make_boxes: Draw bounding boxes on frame
-            make_boxes_2: Draw bounding boxes on frame
+    """Detect objects in frame using TFLite model
+
+    Attributes:
+        frame: Input frame
+        height: Frame height
+        width: Frame width
+        interpreter: TFLite interpreter
+        input_detail: Input details
+        output_detail: Output details
+        scores: Confidence scores
+        boxes: Bounding box coordinates
+        classes: Class indices
+        num_detections: Number of detections
     """
-    def __init__(
-        self, frame, height, width, interpreter, input_detail, output_detail
-    ):  # noqa
+
+    def __init__(self, frame, height, width, interpreter, input_detail, output_detail):
         self.frame = frame
         self.height = height
         self.width = width
@@ -92,15 +86,18 @@ class Detection:
         self.num_detections = None
 
     def nms(self, boxes, scores, iou_threshold):
-        """ Non-maximum suppression
+        """Non-maximum suppression
+
         Args:
             boxes: Bounding box coordinates
             scores: Confidence scores
             iou_threshold: IoU threshold
+
         Returns:
             keep: Indices of boxes to keep
         """
-        # Convert boxes from [x_center, y_center, width, height] to [x_min, y_min, x_max, y_max]
+        # Convert boxes from [x_center, y_center, width, height]
+        # to [x_min, y_min, x_max, y_max]
         x_center, y_center, width, height = (
             boxes[:, 0],
             boxes[:, 1],
@@ -178,12 +175,15 @@ class Detection:
         self.classes = filtered_classes
         return self.make_boxes_2()
 
-    def classFilter(self, classdata):
-        """ Filter classes
+    def classFilter(self, classdata) -> list:
+        """Filter classes
+
         Args:
             classdata: Class data
+
         Returns:
-            classes: Filtered classes"""
+            Filtered classes
+        """
 
         classes = []  # create a list
         for i in range(classdata.shape[0]):  # loop through all predictions
@@ -192,20 +192,21 @@ class Detection:
             )  # get the best classification location
         return classes  # return classes (int)
 
-    def YOLOdetect(self, output_data):
-        """ Detect objects using YOLO
+    def YOLOdetect(self, output_data) -> tuple:
+        """Detect objects using YOLO
+
         Args:
             output_data: Output data
+
         Returns:
-            xyxy: Bounding box coordinates
-            classes: Class indices
-            scores: Confidence scores
+            Bounding box coordinates, class indices, and confidence scores
         """
         output_data = output_data[0]  # x(1, 25200, 7) to x(25200, 7)
         boxes = np.squeeze(output_data[..., :4])  # boxes  [25200, 4]
         scores = np.squeeze(output_data[..., 4:5])  # confidences  [25200, 1]
         classes = self.classFilter(output_data[..., 5:])  # get classes
-        # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
+        # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2]
+        # where xy1=top-left, xy2=bottom-right
         x, y, w, h = boxes[..., 0], boxes[..., 1], boxes[..., 2], boxes[..., 3]  # xywh
         xyxy = [x - w / 2, y - h / 2, x + w / 2, y + h / 2]  # xywh to xyxy   [4, 25200]
 
@@ -216,13 +217,15 @@ class Detection:
         )
 
     def make_boxes(self, scores, xyxy):
-        """ Draw bounding boxes on frame
+        """Draw bounding boxes on frame
+
         Args:
             frame: Input frame
             scores: Confidence scores
             xyxy: Bounding box coordinates
+
         Returns:
-            frame: Frame with bounding boxes
+            Frame with bounding boxes
         """
         for i in range(len(scores)):
             if (scores[i] > 0.1) and (scores[i] <= 1.0):
@@ -236,17 +239,17 @@ class Detection:
                 cv2.rectangle(self.frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
 
     def make_boxes_2(self):
-        """ Draw bounding boxes on frame version 2
-        Args:
-            None
+        """Draw bounding boxes on frame version 2
+
         Returns:
-            frame: Frame with bounding boxes
+            Frame with bounding boxes
         """
         num_detections = len(self.scores)
         for i in range(num_detections):
             # Now, we ensure we're only accessing valid indices
             if (self.scores[i] > 0.3) and (self.scores[i] <= 1.0):
-                # Assuming self.boxes is now [num_detections, 4] with [xmin, ymin, xmax, ymax] for each detection
+                # Assuming self.boxes is now [num_detections, 4] with
+                # [xmin, ymin, xmax, ymax] for each detection
                 xmin, ymin, xmax, ymax = self.boxes[i]
                 xmin = int(max(1, xmin * self.width))
                 ymin = int(max(1, ymin * self.height))
@@ -259,10 +262,10 @@ class Detection:
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
     labels = load_labels(
-        "C:/Users/aditi/Documents/Bachelor_p/Object_Detection-pi/pre-trained model/labels/labels-ppl.txt"
+        "C:/Users/aditi/Documents/Bachelor_p/Object_Detection-pi/pre-trained model/labels/labels-ppl.txt"  # noqa
     )
     interpreter = Interpreter(
-        "C:/Users/aditi/Downloads/all_ml_related/yolov5-20240410T063421Z-001/yolov5/runs/train/exp/weights/best-fp16.tflite "
+        "C:/Users/aditi/Downloads/all_ml_related/yolov5-20240410T063421Z-001/yolov5/runs/train/exp/weights/best-fp16.tflite"  # noqa
     )
     input_details, output_details, height, width = interpreter.get_details()
     interpreter = interpreter.get_interpreter()
