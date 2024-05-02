@@ -22,3 +22,4 @@ cv2.circle(frame, end_effector_point, radius=2, color=(0, 0, 255), thickness=-1)
 cv2.imshow('Frame with Circle', frame)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+

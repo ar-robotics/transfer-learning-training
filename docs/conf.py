@@ -43,6 +43,7 @@ extensions = [
     "sphinx.ext.autosummary",
     # "sphinx_rtd_theme",
     "sphinx.ext.napoleon",
+    "nbsphinx",
 ]
 
 autodoc_member_order = "bysource"
@@ -54,6 +55,8 @@ autodoc_mock_imports = [
     "matplotlib",
     "tflite_model_maker",
     "absl",
+    "mediapipe_model_maker",
+    "roboflow",
 ]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -72,5 +75,5 @@ napoleon_use_rtype = True
 napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
-
+nbsphinx_execute = 'never'
 html_theme = "furo"

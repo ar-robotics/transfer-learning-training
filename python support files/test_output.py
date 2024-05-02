@@ -1,3 +1,4 @@
+
 import tensorflow as tf
 from PIL import Image
 import numpy as np
@@ -18,4 +19,3 @@ for output_detail in output_details:
 
     print(i, output_detail)
     i += 1
-

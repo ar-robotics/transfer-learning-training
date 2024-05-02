@@ -7,5 +7,7 @@ transfer-learning-training
 
    pages/model_maker_training
    pages/test_with_camera
+   notebooks/People-detection
+   notebooks/Custom_training_bolt_detection
 
 .. include:: ../README.rst
