@@ -215,70 +215,44 @@ matches = re.findall(pattern, txt_file)
 # Convert the matched strings to float and separate them into lists
 total_losses, cls_losses, box_losses, model_losses, val_total_losses, val_cls_losses, val_box_losses, val_model_losses = zip(*((float(total), float(cls), float(box), float(model), float(val_total), float(val_cls), float(val_box), float(val_model)) 
                                                            for total, cls, box, model,val_total, val_cls, val_box, val_model in matches))
-print(len(total_losses))
+
 epochs = range(1, len(total_losses) + 1)
 
-plt.figure(figsize=(10,9))
-# plt.plot(epochs, total_losses, ('#DB2E4B'), label="Total Loss", linewidth=4)
-# plt.xlabel("Epochs",fontsize=16)
-# plt.ylabel("Total Loss",fontsize=16)
-# plt.legend(fontsize=16)
+
+def create_and_save_plot(epochs, values, label, filename, ylabel_fontsize=20):
+    fig, ax = plt.subplots(figsize=(9, 9))  # Create figure and axes objects
+    ax.plot(epochs, values, '#DB2E4B', label=label, linewidth=4)
+    ax.set_xlabel("Epochs", fontsize=25)
+    ax.set_ylabel(label, fontsize=ylabel_fontsize)
+    ax.legend(fontsize=23)
+    
+    # Customize tick parameters (examples)
+    ax.tick_params(axis='both', which='major', labelsize=20)  # Adjust tick label size
+    #ax.tick_params(axis='x', rotation=45)  # Rotate x-axis labels if needed
+
+    plt.savefig(f'people/{filename}.png')
+    plt.show()
 
 
-# plt.plot(epochs, cls_losses, ('#DB2E4B'), label="Classification Loss",linewidth=4)
-# plt.xlabel("Epochs",fontsize=16)
-# plt.ylabel("Classification Loss",fontsize=16)
-# plt.legend(fontsize=16)
 
+# create_and_save_plot(epochs, total_losses, 'Total Loss', 'total_loss', ylabel_fontsize=20)
+# create_and_save_plot(epochs, cls_losses, 'Classification Loss', 'cls_loss')
+#create_and_save_plot(epochs, box_losses, 'Box Loss', 'box_loss')
+# create_and_save_plot(epochs, model_losses, 'Model Loss', 'model_loss')
+# create_and_save_plot(epochs, val_total_losses, 'Validation Total Loss', 'val_total_loss')
+# create_and_save_plot(epochs, val_cls_losses, 'Validation Classification Loss', 'val_cls_loss')
+create_and_save_plot(epochs, val_box_losses, 'Validation Box Loss', 'val_box_loss')
+create_and_save_plot(epochs, val_model_losses, 'Validation Model Loss', 'val_model_loss')
 
-# plt.plot(epochs, box_losses, ('#DB2E4B'), label="Box Loss",linewidth=4)
-# plt.xlabel("Epochs",fontsize=16)
-# plt.ylabel("Box Loss",fontsize=16)
-# plt.legend(fontsize=16)
+# Given data
+metrics = {
+    'AP': [0.712, 0.940, 0.898, 0.057, 0.800, 0.778],
+    'AR': [0.331, 0.762, 0.762, 0.300, 0.800, 0.822]
+}
+categories = ['0.50:0.95, all', '0.50, all', '0.75, all',
+              '0.50:0.95, small', '0.50:0.95, med', '0.50:0.95, large']
 
-# plt.plot(epochs, model_losses, ('#DB2E4B'), label="Model Loss",linewidth=4)
-# plt.xlabel("Epochs",fontsize=16)
-# plt.ylabel("Model Loss",fontsize=16)
-# plt.legend(fontsize=16)
-
-
-# plt.plot(epochs, val_total_losses, ('#DB2E4B'), label="Validation Total Loss",linewidth=4)
-# plt.xlabel("Epochs",fontsize=16)
-# plt.ylabel("Validation Total Loss",fontsize=16)
-# plt.legend(fontsize=16)
-
-
-# plt.plot(epochs, val_cls_losses, ('#DB2E4B'), label="Validation Classification Loss",linewidth=4)
-# plt.xlabel("Epochs",fontsize=16)
-# plt.ylabel("Validation Classification Loss",fontsize=16)
-# plt.legend(fontsize=16)
-
-
-# plt.plot(epochs, val_box_losses, ('#DB2E4B'), label="Validation Box Loss",linewidth=4)
-# plt.xlabel("Epochs",fontsize=16)
-# plt.ylabel("Validation Box Loss",fontsize=16)
-# plt.legend(fontsize=16)
-
-
-plt.plot(epochs, val_model_losses, ('#DB2E4B'), label="Validation Model Loss",linewidth=4)
-plt.xlabel("Epochs",fontsize=16)
-plt.ylabel("Validation Model Loss",fontsize=16)
-plt.legend(fontsize=16)
-
-plt.tight_layout()
-plt.show()
-
-
-# # Given data
-# metrics = {
-#     'AP': [0.712, 0.940, 0.898, 0.057, 0.800, 0.778],
-#     'AR': [0.331, 0.762, 0.762, 0.200, 0.800, 0.822]
-# }
-# categories = ['IoU=0.50:0.95, all', 'IoU=0.50, all', 'IoU=0.75, all',
-#               'IoU=0.50:0.95, small', 'IoU=0.50:0.95, medium', 'IoU=0.50:0.95, large']
-# validation_loss = [0.47199657559394836, 0.3502661883831024, 0.001340712420642376, 0.41730180382728577]
-
-# # Set up the matplotlib figure
+# # # Set up the matplotlib figure
 # plt.figure(figsize=(14, 8))
 
 # # Draw a bar plot for AP and AR
@@ -304,7 +278,6 @@ plt.show()
 # # Show plot
 # plt.show()
 
-# Given data
 # metrics = {
 #     'AP': [0.774, 0.955, 0.905, 1.000,1.000, 0.778],
 #     'AR': [0.747, 0.834, 0.834,1.000, 1.000, 0.834]
@@ -315,7 +288,7 @@ plt.show()
 # bar_width = 0.35  # the width of the bars
 # index = np.arange(len(metrics['AP']))  # the label locations
 
-# fig, ax1 = plt.subplots(figsize=(16,13))
+# fig, ax1 = plt.subplots(figsize=(20,20))
 
 # # Bar plots
 # rects1 = ax1.bar(index - bar_width/2, metrics['AP'], bar_width, label='Average Precision (AP)', color='#DB2E4B') # noqa
@@ -323,17 +296,17 @@ plt.show()
 
 
 # # Labels and legends
-# ax1.set_xlabel('IoU Thresholds and Categories',fontsize=16)
-# ax1.set_ylabel(' Metric value',fontsize=16)
-# ax1.set_title('Average Precision, Average Recall per Category',fontsize=20)
+# ax1.set_xlabel('IoU Thresholds and Categories',fontsize=20)
+# ax1.set_ylabel(' Metric value',fontsize=20)
+# ax1.set_title('Average Precision, Average Recall(Bolt)',fontsize=25)
 
 # # Adjust tick label size (new)
-# ax1.tick_params(axis='x', labelsize=14)
-# ax1.tick_params(axis='y', labelsize=14)
+# ax1.tick_params(axis='x', labelsize=25)
+# ax1.tick_params(axis='y', labelsize=25)
 
 # ax1.set_xticks(index)
-# ax1.set_xticklabels(categories, rotation=45, fontsize=12)
+# ax1.set_xticklabels(categories, rotation=45, fontsize=20)
 
-# ax1.legend(loc='upper left',fontsize = 'large')
-# plt.savefig('barplot.png')
-# #plt.show()
+# ax1.legend(loc='upper left',fontsize = 25)
+# plt.savefig('barplot-bolt.png')
+# plt.show()
