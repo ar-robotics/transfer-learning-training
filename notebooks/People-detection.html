@@ -1,0 +1,1341 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Using a custom made dataset to detect bolts using Mediapipe" href="Custom_training_bolt_detection.html" /><link rel="prev" title="test_with_camera" href="../pages/test_with_camera.html" />
+
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+        <title>Using RoboFlow dataset to detect people using MediaPipe - transfer-learning-training 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" /
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">transfer-learning-training 2.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">transfer-learning-training 2.0.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../pages/model_maker_training.html">Model_maker_training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/test_with_camera.html">test_with_camera</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Using RoboFlow dataset to detect people using MediaPipe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Custom_training_bolt_detection.html">Using a custom made dataset to detect bolts using Mediapipe</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/notebooks/People-detection.ipynb.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="Using-RoboFlow-dataset-to-detect-people-using-MediaPipe">
+<h1>Using RoboFlow dataset to detect people using MediaPipe<a class="headerlink" href="#Using-RoboFlow-dataset-to-detect-people-using-MediaPipe" title="Link to this heading">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>!pip install &#39;keras&lt;3.0.0&#39; mediapipe-model-maker
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: keras&lt;3.0.0 in /usr/local/lib/python3.10/dist-packages (2.15.0)
+Collecting mediapipe-model-maker
+  Downloading mediapipe_model_maker-0.2.1.4-py3-none-any.whl (133 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">133.3/133.3 kB</span> <span class="ansi-red-fg">4.1 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: absl-py in /usr/local/lib/python3.10/dist-packages (from mediapipe-model-maker) (1.4.0)
+Collecting mediapipe&gt;=0.10.0 (from mediapipe-model-maker)
+  Downloading mediapipe-0.10.14-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (35.7 MB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">35.7/35.7 MB</span> <span class="ansi-red-fg">41.6 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: numpy in /usr/local/lib/python3.10/dist-packages (from mediapipe-model-maker) (1.25.2)
+Requirement already satisfied: opencv-python in /usr/local/lib/python3.10/dist-packages (from mediapipe-model-maker) (4.8.0.76)
+Requirement already satisfied: tensorflow&lt;2.16,&gt;=2.10 in /usr/local/lib/python3.10/dist-packages (from mediapipe-model-maker) (2.15.0)
+Collecting tensorflow-addons (from mediapipe-model-maker)
+  Downloading tensorflow_addons-0.23.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (611 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">611.8/611.8 kB</span> <span class="ansi-red-fg">57.8 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: tensorflow-datasets in /usr/local/lib/python3.10/dist-packages (from mediapipe-model-maker) (4.9.4)
+Requirement already satisfied: tensorflow-hub in /usr/local/lib/python3.10/dist-packages (from mediapipe-model-maker) (0.16.1)
+Collecting tensorflow-model-optimization&lt;0.8.0 (from mediapipe-model-maker)
+  Downloading tensorflow_model_optimization-0.7.5-py2.py3-none-any.whl (241 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">241.2/241.2 kB</span> <span class="ansi-red-fg">32.5 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Collecting tensorflow-text (from mediapipe-model-maker)
+  Downloading tensorflow_text-2.16.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (5.2 MB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">5.2/5.2 MB</span> <span class="ansi-red-fg">100.4 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Collecting tf-models-official&lt;2.16.0,&gt;=2.13.2 (from mediapipe-model-maker)
+  Downloading tf_models_official-2.15.0-py2.py3-none-any.whl (2.7 MB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">2.7/2.7 MB</span> <span class="ansi-red-fg">97.3 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: attrs&gt;=19.1.0 in /usr/local/lib/python3.10/dist-packages (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (23.2.0)
+Requirement already satisfied: flatbuffers&gt;=2.0 in /usr/local/lib/python3.10/dist-packages (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (24.3.25)
+Requirement already satisfied: jax in /usr/local/lib/python3.10/dist-packages (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (0.4.26)
+Requirement already satisfied: jaxlib in /usr/local/lib/python3.10/dist-packages (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (0.4.26+cuda12.cudnn89)
+Requirement already satisfied: matplotlib in /usr/local/lib/python3.10/dist-packages (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (3.7.1)
+Requirement already satisfied: opencv-contrib-python in /usr/local/lib/python3.10/dist-packages (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (4.8.0.76)
+Collecting protobuf&lt;5,&gt;=4.25.3 (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker)
+  Downloading protobuf-4.25.3-cp37-abi3-manylinux2014_x86_64.whl (294 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">294.6/294.6 kB</span> <span class="ansi-red-fg">37.2 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Collecting sounddevice&gt;=0.4.4 (from mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker)
+  Downloading sounddevice-0.4.6-py3-none-any.whl (31 kB)
+Requirement already satisfied: astunparse&gt;=1.6.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (1.6.3)
+Requirement already satisfied: gast!=0.5.0,!=0.5.1,!=0.5.2,&gt;=0.2.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (0.5.4)
+Requirement already satisfied: google-pasta&gt;=0.1.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (0.2.0)
+Requirement already satisfied: h5py&gt;=2.9.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (3.9.0)
+Requirement already satisfied: libclang&gt;=13.0.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (18.1.1)
+Requirement already satisfied: ml-dtypes~=0.2.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (0.2.0)
+Requirement already satisfied: opt-einsum&gt;=2.3.2 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (3.3.0)
+Requirement already satisfied: packaging in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (24.0)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (67.7.2)
+Requirement already satisfied: six&gt;=1.12.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (1.16.0)
+Requirement already satisfied: termcolor&gt;=1.1.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (2.4.0)
+Requirement already satisfied: typing-extensions&gt;=3.6.6 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (4.11.0)
+Requirement already satisfied: wrapt&lt;1.15,&gt;=1.11.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (1.14.1)
+Requirement already satisfied: tensorflow-io-gcs-filesystem&gt;=0.23.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (0.37.0)
+Requirement already satisfied: grpcio&lt;2.0,&gt;=1.24.3 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (1.63.0)
+Requirement already satisfied: tensorboard&lt;2.16,&gt;=2.15 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (2.15.2)
+Requirement already satisfied: tensorflow-estimator&lt;2.16,&gt;=2.15.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (2.15.0)
+Requirement already satisfied: dm-tree~=0.1.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow-model-optimization&lt;0.8.0-&gt;mediapipe-model-maker) (0.1.8)
+Requirement already satisfied: Cython in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (3.0.10)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (9.4.0)
+Requirement already satisfied: gin-config in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.5.0)
+Requirement already satisfied: google-api-python-client&gt;=1.6.7 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2.84.0)
+Collecting immutabledict (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker)
+  Downloading immutabledict-4.2.0-py3-none-any.whl (4.7 kB)
+Requirement already satisfied: kaggle&gt;=1.3.9 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (1.6.12)
+Requirement already satisfied: oauth2client in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (4.1.3)
+Requirement already satisfied: opencv-python-headless in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (4.9.0.80)
+Requirement already satisfied: pandas&gt;=0.22.0 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2.0.3)
+Requirement already satisfied: psutil&gt;=5.4.3 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (5.9.5)
+Requirement already satisfied: py-cpuinfo&gt;=3.3.0 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (9.0.0)
+Requirement already satisfied: pycocotools in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2.0.7)
+Requirement already satisfied: pyyaml&gt;=6.0.0 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (6.0.1)
+Collecting sacrebleu (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker)
+  Downloading sacrebleu-2.4.2-py3-none-any.whl (106 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">106.7/106.7 kB</span> <span class="ansi-red-fg">14.9 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: scipy&gt;=0.19.1 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (1.11.4)
+Requirement already satisfied: sentencepiece in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.1.99)
+Collecting seqeval (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker)
+  Downloading seqeval-1.2.2.tar.gz (43 kB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">43.6/43.6 kB</span> <span class="ansi-red-fg">7.2 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+  Preparing metadata (setup.py) ... done
+Collecting tensorflow-text (from mediapipe-model-maker)
+  Downloading tensorflow_text-2.15.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (5.2 MB)
+     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">5.2/5.2 MB</span> <span class="ansi-red-fg">81.9 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
+Requirement already satisfied: tf-slim&gt;=1.1.0 in /usr/local/lib/python3.10/dist-packages (from tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (1.1.0)
+Requirement already satisfied: tf-keras&gt;=2.14.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow-hub-&gt;mediapipe-model-maker) (2.15.1)
+Collecting typeguard&lt;3.0.0,&gt;=2.7 (from tensorflow-addons-&gt;mediapipe-model-maker)
+  Downloading typeguard-2.13.3-py3-none-any.whl (17 kB)
+Requirement already satisfied: click in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (8.1.7)
+Requirement already satisfied: etils[enp,epath,etree]&gt;=0.9.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (1.7.0)
+Requirement already satisfied: promise in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (2.3)
+Requirement already satisfied: requests&gt;=2.19.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (2.31.0)
+Requirement already satisfied: tensorflow-metadata in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (1.15.0)
+Requirement already satisfied: toml in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (0.10.2)
+Requirement already satisfied: tqdm in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (4.66.4)
+Requirement already satisfied: array-record&gt;=0.5.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow-datasets-&gt;mediapipe-model-maker) (0.5.1)
+Requirement already satisfied: wheel&lt;1.0,&gt;=0.23.0 in /usr/local/lib/python3.10/dist-packages (from astunparse&gt;=1.6.0-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (0.43.0)
+Requirement already satisfied: fsspec in /usr/local/lib/python3.10/dist-packages (from etils[enp,epath,etree]&gt;=0.9.0-&gt;tensorflow-datasets-&gt;mediapipe-model-maker) (2023.6.0)
+Requirement already satisfied: importlib_resources in /usr/local/lib/python3.10/dist-packages (from etils[enp,epath,etree]&gt;=0.9.0-&gt;tensorflow-datasets-&gt;mediapipe-model-maker) (6.4.0)
+Requirement already satisfied: zipp in /usr/local/lib/python3.10/dist-packages (from etils[enp,epath,etree]&gt;=0.9.0-&gt;tensorflow-datasets-&gt;mediapipe-model-maker) (3.18.1)
+Requirement already satisfied: httplib2&lt;1dev,&gt;=0.15.0 in /usr/local/lib/python3.10/dist-packages (from google-api-python-client&gt;=1.6.7-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.22.0)
+Requirement already satisfied: google-auth&lt;3.0.0dev,&gt;=1.19.0 in /usr/local/lib/python3.10/dist-packages (from google-api-python-client&gt;=1.6.7-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2.27.0)
+Requirement already satisfied: google-auth-httplib2&gt;=0.1.0 in /usr/local/lib/python3.10/dist-packages (from google-api-python-client&gt;=1.6.7-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.1.1)
+Requirement already satisfied: google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,&lt;3.0.0dev,&gt;=1.31.5 in /usr/local/lib/python3.10/dist-packages (from google-api-python-client&gt;=1.6.7-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2.11.1)
+Requirement already satisfied: uritemplate&lt;5,&gt;=3.0.1 in /usr/local/lib/python3.10/dist-packages (from google-api-python-client&gt;=1.6.7-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (4.1.1)
+Requirement already satisfied: certifi&gt;=2023.7.22 in /usr/local/lib/python3.10/dist-packages (from kaggle&gt;=1.3.9-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2024.2.2)
+Requirement already satisfied: python-dateutil in /usr/local/lib/python3.10/dist-packages (from kaggle&gt;=1.3.9-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2.8.2)
+Requirement already satisfied: python-slugify in /usr/local/lib/python3.10/dist-packages (from kaggle&gt;=1.3.9-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (8.0.4)
+Requirement already satisfied: urllib3 in /usr/local/lib/python3.10/dist-packages (from kaggle&gt;=1.3.9-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2.0.7)
+Requirement already satisfied: bleach in /usr/local/lib/python3.10/dist-packages (from kaggle&gt;=1.3.9-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (6.1.0)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas&gt;=0.22.0-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2023.4)
+Requirement already satisfied: tzdata&gt;=2022.1 in /usr/local/lib/python3.10/dist-packages (from pandas&gt;=0.22.0-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2024.1)
+Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /usr/local/lib/python3.10/dist-packages (from requests&gt;=2.19.0-&gt;tensorflow-datasets-&gt;mediapipe-model-maker) (3.3.2)
+Requirement already satisfied: idna&lt;4,&gt;=2.5 in /usr/local/lib/python3.10/dist-packages (from requests&gt;=2.19.0-&gt;tensorflow-datasets-&gt;mediapipe-model-maker) (3.7)
+Requirement already satisfied: CFFI&gt;=1.0 in /usr/local/lib/python3.10/dist-packages (from sounddevice&gt;=0.4.4-&gt;mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (1.16.0)
+Requirement already satisfied: google-auth-oauthlib&lt;2,&gt;=0.5 in /usr/local/lib/python3.10/dist-packages (from tensorboard&lt;2.16,&gt;=2.15-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (1.2.0)
+Requirement already satisfied: markdown&gt;=2.6.8 in /usr/local/lib/python3.10/dist-packages (from tensorboard&lt;2.16,&gt;=2.15-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (3.6)
+Requirement already satisfied: tensorboard-data-server&lt;0.8.0,&gt;=0.7.0 in /usr/local/lib/python3.10/dist-packages (from tensorboard&lt;2.16,&gt;=2.15-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (0.7.2)
+Requirement already satisfied: werkzeug&gt;=1.0.1 in /usr/local/lib/python3.10/dist-packages (from tensorboard&lt;2.16,&gt;=2.15-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (3.0.3)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib-&gt;mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (1.2.1)
+Requirement already satisfied: cycler&gt;=0.10 in /usr/local/lib/python3.10/dist-packages (from matplotlib-&gt;mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib-&gt;mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (4.51.0)
+Requirement already satisfied: kiwisolver&gt;=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib-&gt;mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (1.4.5)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib-&gt;mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (3.1.2)
+Requirement already satisfied: pyasn1&gt;=0.1.7 in /usr/local/lib/python3.10/dist-packages (from oauth2client-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.6.0)
+Requirement already satisfied: pyasn1-modules&gt;=0.0.5 in /usr/local/lib/python3.10/dist-packages (from oauth2client-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.4.0)
+Requirement already satisfied: rsa&gt;=3.1.4 in /usr/local/lib/python3.10/dist-packages (from oauth2client-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (4.9)
+Collecting portalocker (from sacrebleu-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker)
+  Downloading portalocker-2.8.2-py3-none-any.whl (17 kB)
+Requirement already satisfied: regex in /usr/local/lib/python3.10/dist-packages (from sacrebleu-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (2023.12.25)
+Requirement already satisfied: tabulate&gt;=0.8.9 in /usr/local/lib/python3.10/dist-packages (from sacrebleu-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.9.0)
+Collecting colorama (from sacrebleu-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker)
+  Downloading colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Requirement already satisfied: lxml in /usr/local/lib/python3.10/dist-packages (from sacrebleu-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (4.9.4)
+Requirement already satisfied: scikit-learn&gt;=0.21.3 in /usr/local/lib/python3.10/dist-packages (from seqeval-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (1.2.2)
+INFO: pip is looking at multiple versions of tensorflow-metadata to determine which version is compatible with other requirements. This could take a while.
+Collecting tensorflow-metadata (from tensorflow-datasets-&gt;mediapipe-model-maker)
+  Downloading tensorflow_metadata-1.14.0-py3-none-any.whl (28 kB)
+Requirement already satisfied: googleapis-common-protos&lt;2,&gt;=1.52.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow-metadata-&gt;tensorflow-datasets-&gt;mediapipe-model-maker) (1.63.0)
+  Downloading tensorflow_metadata-1.13.1-py3-none-any.whl (28 kB)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.10/dist-packages (from CFFI&gt;=1.0-&gt;sounddevice&gt;=0.4.4-&gt;mediapipe&gt;=0.10.0-&gt;mediapipe-model-maker) (2.22)
+Requirement already satisfied: cachetools&lt;6.0,&gt;=2.0.0 in /usr/local/lib/python3.10/dist-packages (from google-auth&lt;3.0.0dev,&gt;=1.19.0-&gt;google-api-python-client&gt;=1.6.7-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (5.3.3)
+Requirement already satisfied: requests-oauthlib&gt;=0.7.0 in /usr/local/lib/python3.10/dist-packages (from google-auth-oauthlib&lt;2,&gt;=0.5-&gt;tensorboard&lt;2.16,&gt;=2.15-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (1.3.1)
+Requirement already satisfied: joblib&gt;=1.1.1 in /usr/local/lib/python3.10/dist-packages (from scikit-learn&gt;=0.21.3-&gt;seqeval-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (1.4.2)
+Requirement already satisfied: threadpoolctl&gt;=2.0.0 in /usr/local/lib/python3.10/dist-packages (from scikit-learn&gt;=0.21.3-&gt;seqeval-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (3.5.0)
+Requirement already satisfied: MarkupSafe&gt;=2.1.1 in /usr/local/lib/python3.10/dist-packages (from werkzeug&gt;=1.0.1-&gt;tensorboard&lt;2.16,&gt;=2.15-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (2.1.5)
+Requirement already satisfied: webencodings in /usr/local/lib/python3.10/dist-packages (from bleach-&gt;kaggle&gt;=1.3.9-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (0.5.1)
+Requirement already satisfied: text-unidecode&gt;=1.3 in /usr/local/lib/python3.10/dist-packages (from python-slugify-&gt;kaggle&gt;=1.3.9-&gt;tf-models-official&lt;2.16.0,&gt;=2.13.2-&gt;mediapipe-model-maker) (1.3)
+Requirement already satisfied: oauthlib&gt;=3.0.0 in /usr/local/lib/python3.10/dist-packages (from requests-oauthlib&gt;=0.7.0-&gt;google-auth-oauthlib&lt;2,&gt;=0.5-&gt;tensorboard&lt;2.16,&gt;=2.15-&gt;tensorflow&lt;2.16,&gt;=2.10-&gt;mediapipe-model-maker) (3.2.2)
+Building wheels for collected packages: seqeval
+  Building wheel for seqeval (setup.py) ... done
+  Created wheel for seqeval: filename=seqeval-1.2.2-py3-none-any.whl size=16161 sha256=6ec7968037707f0b12a73787c25644567cbf984bda50d55dbcda584f4784d6f7
+  Stored in directory: /root/.cache/pip/wheels/1a/67/4a/ad4082dd7dfc30f2abfe4d80a2ed5926a506eb8a972b4767fa
+Successfully built seqeval
+Installing collected packages: typeguard, tensorflow-model-optimization, protobuf, portalocker, immutabledict, colorama, tensorflow-addons, sounddevice, sacrebleu, tensorflow-metadata, seqeval, mediapipe, tensorflow-text, tf-models-official, mediapipe-model-maker
+  Attempting uninstall: protobuf
+    Found existing installation: protobuf 3.20.3
+    Uninstalling protobuf-3.20.3:
+      Successfully uninstalled protobuf-3.20.3
+  Attempting uninstall: tensorflow-metadata
+    Found existing installation: tensorflow-metadata 1.15.0
+    Uninstalling tensorflow-metadata-1.15.0:
+      Successfully uninstalled tensorflow-metadata-1.15.0
+Successfully installed colorama-0.4.6 immutabledict-4.2.0 mediapipe-0.10.14 mediapipe-model-maker-0.2.1.4 portalocker-2.8.2 protobuf-4.25.3 sacrebleu-2.4.2 seqeval-1.2.2 sounddevice-0.4.6 tensorflow-addons-0.23.0 tensorflow-metadata-1.13.1 tensorflow-model-optimization-0.7.5 tensorflow-text-2.15.0 tf-models-official-2.15.0 typeguard-2.13.3
+</pre></div></div>
+</div>
+<section id="Import-libraies">
+<h2>Import libraies<a class="headerlink" href="#Import-libraies" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import os
+import tensorflow as tf
+assert tf.__version__.startswith(&#39;2&#39;)
+from google.colab import files
+
+from mediapipe_model_maker import object_detector
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/usr/local/lib/python3.10/dist-packages/tensorflow_addons/utils/tfa_eol_msg.py:23: UserWarning:
+
+TensorFlow Addons (TFA) has ended development and introduction of new features.
+TFA has entered a minimal maintenance and release mode until a planned end of life in May 2024.
+Please modify downstream libraries to take dependencies from other repositories in our TensorFlow community (e.g. Keras, Keras-CV, and Keras-NLP).
+
+For more information see: https://github.com/tensorflow/addons/issues/2807
+
+  warnings.warn(
+</pre></div></div>
+</div>
+<section id="Download-dataset-directly-from-Roboflow">
+<h3>Download dataset directly from Roboflow<a class="headerlink" href="#Download-dataset-directly-from-Roboflow" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from google.colab import drive
+drive.mount(&#39;/content/drive&#39;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Mounted at /content/drive
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>!pip install roboflow
+
+from roboflow import Roboflow
+rf = Roboflow(api_key=&quot;rda3pff5KNqzUs0cUoSA&quot;)
+project = rf.workspace(&quot;yolodataset&quot;).project(&quot;person-detection-9a6mk&quot;)
+version = project.version(1)
+dataset = version.download(&quot;coco&quot;)
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Loading,-training,-and-evaluating">
+<h3>Loading, training, and evaluating<a class="headerlink" href="#Loading,-training,-and-evaluating" title="Link to this heading">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>class TransferLearning():
+    &quot;&quot;&quot; Transfer Learning class for object detection using MediaPipe Model Maker
+    2 datasets are required: train and validation
+
+    Attributes:
+        train_dataset_path: path to the train dataset
+        validation_dataset_path: path to the validation dataset
+        model: model to be trained
+        train_data: train dataset
+        validation_data: validation dataset
+    &quot;&quot;&quot;
+    def __init__(self):
+        self.train_dataset_path = &quot;/content/drive/MyDrive/PeopleDetection/train&quot;
+        self.validation_dataset_path = &quot;/content/drive/MyDrive/PeopleDetection/valid&quot;
+        self.model = None
+        self.train_data = None
+        self.validation_data = None
+        self.hparams = None
+        self.options = None
+
+    def load_data(self):
+        &quot;&quot;&quot; Load train and validation datasets from the given paths        &quot;&quot;&quot;
+        self.train_data = object_detector.Dataset.from_pascal_voc_folder(self.train_dataset_path)
+        self.validation_data = object_detector.Dataset.from_pascal_voc_folder(self.validation_dataset_path)
+
+    def train_model(self,batch_size=8, learning_rate=0.1, epochs=100, export_dir=&#39;exported_model&#39;):
+        &quot;&quot;&quot; Train the model using the loaded datasets
+
+        Args:
+            batch_size: batch size for training
+            learning_rate: learning rate for training
+            epochs: number of epochs for training
+            export_dir: directory to export the trained model
+        &quot;&quot;&quot;
+        self.hparams = object_detector.HParams(batch_size=batch_size, learning_rate=learning_rate, epochs=epochs, export_dir=export_dir)
+        self.options = object_detector.ObjectDetectorOptions(
+            supported_model=object_detector.SupportedModels.MOBILENET_V2,
+            hparams=self.hparams
+        )
+
+        self.model = object_detector.ObjectDetector.create(
+            train_data=self.train_data,
+            validation_data=self.validation_data,
+            options=self.options)
+
+    def evaluate_model(self,batch_size=8):
+        &quot;&quot;&quot; Evaluate the trained model
+
+        Args:
+            batch_size: batch size for evaluation
+        &quot;&quot;&quot;
+        loss, metrics = self.model.evaluate(self.validation_data,batch_size)
+        print(f&quot;Validation loss: {loss}&quot;)
+        print(f&quot;Validation metrics: {metrics}&quot;)
+
+    def export_model(self):
+        &quot;&quot;&quot; Export the trained model &quot;&quot;&quot;
+        self.model.export_model(&#39;people-detection.tflite&#39;)
+        print(f&quot;Model exported&quot;)
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>TransferLearning_model = TransferLearning()
+TransferLearning_model.load_data()
+<br/><br/></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>TransferLearning_model.train_model()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using existing files at /tmp/model_maker/object_detector/mobilenetv2_i256
+Model: &#34;retina_net_model_1&#34;
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #
+=================================================================
+ mobile_net_1 (MobileNet)    {&#39;2&#39;: (None, 64, 64, 24   2257984
+                             ),
+                              &#39;3&#39;: (None, 32, 32, 32
+                             ),
+                              &#39;4&#39;: (None, 16, 16, 96
+                             ),
+                              &#39;5&#39;: (None, 8, 8, 320)
+                             , &#39;6&#39;: (None, 8, 8, 128
+                             0)}
+
+ fpn_1 (FPN)                 {&#39;5&#39;: (None, 8, 8, 128)   149056
+                             , &#39;4&#39;: (None, 16, 16, 1
+                             28),
+                              &#39;3&#39;: (None, 32, 32, 12
+                             8),
+                              &#39;6&#39;: (None, 4, 4, 128)
+                             , &#39;7&#39;: (None, 2, 2, 128
+                             )}
+
+ multilevel_detection_gener  multiple                  0 (unused)
+ ator_1 (MultilevelDetectio
+ nGenerator)
+
+ retina_net_head_1 (RetinaN  ({&#39;3&#39;: (None, 32, 32, 1   171062
+ etHead)                     8),
+                              &#39;4&#39;: (None, 16, 16, 18
+                             ),
+                              &#39;5&#39;: (None, 8, 8, 18),
+                              &#39;6&#39;: (None, 4, 4, 18),
+                              &#39;7&#39;: (None, 2, 2, 18)}
+                             , {&#39;3&#39;: (None, 32, 32,
+                             36),
+                              &#39;4&#39;: (None, 16, 16, 36
+                             ),
+                              &#39;5&#39;: (None, 8, 8, 36),
+                              &#39;6&#39;: (None, 4, 4, 36),
+                              &#39;7&#39;: (None, 2, 2, 36)}
+                             , {})
+
+=================================================================
+Total params: 2578102 (9.83 MB)
+Trainable params: 2532470 (9.66 MB)
+Non-trainable params: 45632 (178.25 KB)
+_________________________________________________________________
+Epoch 1/100
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:tensorflow:Gradients do not exist for variables [&#39;conv2dbn_block_4/batch_normalization/gamma:0&#39;, &#39;conv2dbn_block_4/batch_normalization/beta:0&#39;] when minimizing the loss. If you&#39;re using `model.compile()`, did you forget to provide a `loss` argument?
+WARNING:tensorflow:Gradients do not exist for variables [&#39;conv2dbn_block_4/batch_normalization/gamma:0&#39;, &#39;conv2dbn_block_4/batch_normalization/beta:0&#39;] when minimizing the loss. If you&#39;re using `model.compile()`, did you forget to provide a `loss` argument?
+WARNING:tensorflow:Gradients do not exist for variables [&#39;conv2dbn_block_4/batch_normalization/gamma:0&#39;, &#39;conv2dbn_block_4/batch_normalization/beta:0&#39;] when minimizing the loss. If you&#39;re using `model.compile()`, did you forget to provide a `loss` argument?
+WARNING:tensorflow:Gradients do not exist for variables [&#39;conv2dbn_block_4/batch_normalization/gamma:0&#39;, &#39;conv2dbn_block_4/batch_normalization/beta:0&#39;] when minimizing the loss. If you&#39;re using `model.compile()`, did you forget to provide a `loss` argument?
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+58/58 [==============================] - 56s 252ms/step - total_loss: 1.6840 - cls_loss: 1.4160 - box_loss: 0.0043 - model_loss: 1.6291 - val_total_loss: 1.3220 - val_cls_loss: 1.1915 - val_box_loss: 0.0015 - val_model_loss: 1.2671
+Epoch 2/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 1.3179 - cls_loss: 1.1044 - box_loss: 0.0032 - model_loss: 1.2630 - val_total_loss: 1.0755 - val_cls_loss: 0.9413 - val_box_loss: 0.0016 - val_model_loss: 1.0205
+Epoch 3/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 1.0288 - cls_loss: 0.8628 - box_loss: 0.0022 - model_loss: 0.9738 - val_total_loss: 0.8156 - val_cls_loss: 0.6887 - val_box_loss: 0.0014 - val_model_loss: 0.7607
+Epoch 4/100
+58/58 [==============================] - 10s 164ms/step - total_loss: 0.7748 - cls_loss: 0.6346 - box_loss: 0.0017 - model_loss: 0.7198 - val_total_loss: 0.6834 - val_cls_loss: 0.5618 - val_box_loss: 0.0013 - val_model_loss: 0.6285
+Epoch 5/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.5706 - cls_loss: 0.4493 - box_loss: 0.0013 - model_loss: 0.5156 - val_total_loss: 0.5903 - val_cls_loss: 0.4719 - val_box_loss: 0.0013 - val_model_loss: 0.5354
+Epoch 6/100
+58/58 [==============================] - 10s 172ms/step - total_loss: 0.4468 - cls_loss: 0.3364 - box_loss: 0.0011 - model_loss: 0.3918 - val_total_loss: 0.5029 - val_cls_loss: 0.3826 - val_box_loss: 0.0013 - val_model_loss: 0.4479
+Epoch 7/100
+58/58 [==============================] - 9s 152ms/step - total_loss: 0.3687 - cls_loss: 0.2690 - box_loss: 8.9543e-04 - model_loss: 0.3138 - val_total_loss: 0.4401 - val_cls_loss: 0.3230 - val_box_loss: 0.0012 - val_model_loss: 0.3851
+Epoch 8/100
+58/58 [==============================] - 10s 166ms/step - total_loss: 0.3224 - cls_loss: 0.2254 - box_loss: 8.4212e-04 - model_loss: 0.2675 - val_total_loss: 0.4191 - val_cls_loss: 0.3006 - val_box_loss: 0.0013 - val_model_loss: 0.3641
+Epoch 9/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.2824 - cls_loss: 0.1937 - box_loss: 6.7377e-04 - model_loss: 0.2274 - val_total_loss: 0.3825 - val_cls_loss: 0.2630 - val_box_loss: 0.0013 - val_model_loss: 0.3276
+Epoch 10/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.2482 - cls_loss: 0.1637 - box_loss: 5.9065e-04 - model_loss: 0.1932 - val_total_loss: 0.3733 - val_cls_loss: 0.2519 - val_box_loss: 0.0013 - val_model_loss: 0.3184
+Epoch 11/100
+58/58 [==============================] - 9s 153ms/step - total_loss: 0.2254 - cls_loss: 0.1436 - box_loss: 5.3736e-04 - model_loss: 0.1705 - val_total_loss: 0.3483 - val_cls_loss: 0.2275 - val_box_loss: 0.0013 - val_model_loss: 0.2934
+Epoch 12/100
+58/58 [==============================] - 11s 179ms/step - total_loss: 0.2134 - cls_loss: 0.1337 - box_loss: 4.9445e-04 - model_loss: 0.1584 - val_total_loss: 0.3503 - val_cls_loss: 0.2308 - val_box_loss: 0.0013 - val_model_loss: 0.2954
+Epoch 13/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.2008 - cls_loss: 0.1197 - box_loss: 5.2362e-04 - model_loss: 0.1459 - val_total_loss: 0.3455 - val_cls_loss: 0.2242 - val_box_loss: 0.0013 - val_model_loss: 0.2906
+Epoch 14/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.1877 - cls_loss: 0.1109 - box_loss: 4.3546e-04 - model_loss: 0.1327 - val_total_loss: 0.3372 - val_cls_loss: 0.2169 - val_box_loss: 0.0013 - val_model_loss: 0.2823
+Epoch 15/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1726 - cls_loss: 0.0985 - box_loss: 3.8342e-04 - model_loss: 0.1177 - val_total_loss: 0.3672 - val_cls_loss: 0.2423 - val_box_loss: 0.0014 - val_model_loss: 0.3123
+Epoch 16/100
+58/58 [==============================] - 9s 151ms/step - total_loss: 0.1703 - cls_loss: 0.0962 - box_loss: 3.8260e-04 - model_loss: 0.1154 - val_total_loss: 0.3559 - val_cls_loss: 0.2375 - val_box_loss: 0.0013 - val_model_loss: 0.3010
+Epoch 17/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1692 - cls_loss: 0.0941 - box_loss: 4.0279e-04 - model_loss: 0.1143 - val_total_loss: 0.3512 - val_cls_loss: 0.2347 - val_box_loss: 0.0012 - val_model_loss: 0.2962
+Epoch 18/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.1515 - cls_loss: 0.0808 - box_loss: 3.1526e-04 - model_loss: 0.0966 - val_total_loss: 0.3413 - val_cls_loss: 0.2211 - val_box_loss: 0.0013 - val_model_loss: 0.2864
+Epoch 19/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.1478 - cls_loss: 0.0760 - box_loss: 3.3900e-04 - model_loss: 0.0929 - val_total_loss: 0.3312 - val_cls_loss: 0.2146 - val_box_loss: 0.0012 - val_model_loss: 0.2763
+Epoch 20/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.1476 - cls_loss: 0.0749 - box_loss: 3.5538e-04 - model_loss: 0.0927 - val_total_loss: 0.3337 - val_cls_loss: 0.2179 - val_box_loss: 0.0012 - val_model_loss: 0.2788
+Epoch 21/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.1448 - cls_loss: 0.0719 - box_loss: 3.5935e-04 - model_loss: 0.0899 - val_total_loss: 0.3377 - val_cls_loss: 0.2228 - val_box_loss: 0.0012 - val_model_loss: 0.2828
+Epoch 22/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.1327 - cls_loss: 0.0636 - box_loss: 2.8470e-04 - model_loss: 0.0778 - val_total_loss: 0.3492 - val_cls_loss: 0.2320 - val_box_loss: 0.0012 - val_model_loss: 0.2943
+Epoch 23/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.1315 - cls_loss: 0.0617 - box_loss: 2.9893e-04 - model_loss: 0.0766 - val_total_loss: 0.3484 - val_cls_loss: 0.2308 - val_box_loss: 0.0013 - val_model_loss: 0.2935
+Epoch 24/100
+58/58 [==============================] - 11s 182ms/step - total_loss: 0.1334 - cls_loss: 0.0627 - box_loss: 3.1571e-04 - model_loss: 0.0785 - val_total_loss: 0.3256 - val_cls_loss: 0.2088 - val_box_loss: 0.0012 - val_model_loss: 0.2707
+Epoch 25/100
+58/58 [==============================] - 11s 179ms/step - total_loss: 0.1261 - cls_loss: 0.0573 - box_loss: 2.7877e-04 - model_loss: 0.0712 - val_total_loss: 0.3409 - val_cls_loss: 0.2243 - val_box_loss: 0.0012 - val_model_loss: 0.2860
+Epoch 26/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.1251 - cls_loss: 0.0553 - box_loss: 2.9841e-04 - model_loss: 0.0702 - val_total_loss: 0.3539 - val_cls_loss: 0.2358 - val_box_loss: 0.0013 - val_model_loss: 0.2990
+Epoch 27/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1201 - cls_loss: 0.0526 - box_loss: 2.5220e-04 - model_loss: 0.0652 - val_total_loss: 0.3367 - val_cls_loss: 0.2183 - val_box_loss: 0.0013 - val_model_loss: 0.2819
+Epoch 28/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.1321 - cls_loss: 0.0596 - box_loss: 3.5220e-04 - model_loss: 0.0772 - val_total_loss: 0.3546 - val_cls_loss: 0.2411 - val_box_loss: 0.0012 - val_model_loss: 0.2998
+Epoch 29/100
+58/58 [==============================] - 11s 180ms/step - total_loss: 0.1235 - cls_loss: 0.0536 - box_loss: 3.0165e-04 - model_loss: 0.0687 - val_total_loss: 0.3337 - val_cls_loss: 0.2186 - val_box_loss: 0.0012 - val_model_loss: 0.2788
+Epoch 30/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.1185 - cls_loss: 0.0497 - box_loss: 2.8005e-04 - model_loss: 0.0637 - val_total_loss: 0.3595 - val_cls_loss: 0.2388 - val_box_loss: 0.0013 - val_model_loss: 0.3047
+Epoch 31/100
+58/58 [==============================] - 10s 166ms/step - total_loss: 0.1141 - cls_loss: 0.0478 - box_loss: 2.2938e-04 - model_loss: 0.0593 - val_total_loss: 0.3671 - val_cls_loss: 0.2495 - val_box_loss: 0.0013 - val_model_loss: 0.3123
+Epoch 32/100
+58/58 [==============================] - 10s 161ms/step - total_loss: 0.1108 - cls_loss: 0.0441 - box_loss: 2.3839e-04 - model_loss: 0.0560 - val_total_loss: 0.3715 - val_cls_loss: 0.2531 - val_box_loss: 0.0013 - val_model_loss: 0.3166
+Epoch 33/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.1192 - cls_loss: 0.0502 - box_loss: 2.8361e-04 - model_loss: 0.0644 - val_total_loss: 0.3840 - val_cls_loss: 0.2656 - val_box_loss: 0.0013 - val_model_loss: 0.3292
+Epoch 34/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1068 - cls_loss: 0.0404 - box_loss: 2.3252e-04 - model_loss: 0.0520 - val_total_loss: 0.3632 - val_cls_loss: 0.2448 - val_box_loss: 0.0013 - val_model_loss: 0.3084
+Epoch 35/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.1090 - cls_loss: 0.0422 - box_loss: 2.3928e-04 - model_loss: 0.0542 - val_total_loss: 0.3537 - val_cls_loss: 0.2356 - val_box_loss: 0.0013 - val_model_loss: 0.2989
+Epoch 36/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.0979 - cls_loss: 0.0339 - box_loss: 1.8403e-04 - model_loss: 0.0431 - val_total_loss: 0.3536 - val_cls_loss: 0.2343 - val_box_loss: 0.0013 - val_model_loss: 0.2988
+Epoch 37/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.1079 - cls_loss: 0.0413 - box_loss: 2.3589e-04 - model_loss: 0.0531 - val_total_loss: 0.3650 - val_cls_loss: 0.2485 - val_box_loss: 0.0012 - val_model_loss: 0.3102
+Epoch 38/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.1102 - cls_loss: 0.0425 - box_loss: 2.5795e-04 - model_loss: 0.0554 - val_total_loss: 0.3840 - val_cls_loss: 0.2676 - val_box_loss: 0.0012 - val_model_loss: 0.3292
+Epoch 39/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.1170 - cls_loss: 0.0485 - box_loss: 2.7531e-04 - model_loss: 0.0622 - val_total_loss: 0.4279 - val_cls_loss: 0.3101 - val_box_loss: 0.0013 - val_model_loss: 0.3731
+Epoch 40/100
+58/58 [==============================] - 10s 172ms/step - total_loss: 0.1080 - cls_loss: 0.0407 - box_loss: 2.5054e-04 - model_loss: 0.0532 - val_total_loss: 0.3845 - val_cls_loss: 0.2709 - val_box_loss: 0.0012 - val_model_loss: 0.3297
+Epoch 41/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0958 - cls_loss: 0.0318 - box_loss: 1.8255e-04 - model_loss: 0.0410 - val_total_loss: 0.3940 - val_cls_loss: 0.2801 - val_box_loss: 0.0012 - val_model_loss: 0.3392
+Epoch 42/100
+58/58 [==============================] - 10s 171ms/step - total_loss: 0.1120 - cls_loss: 0.0452 - box_loss: 2.3984e-04 - model_loss: 0.0572 - val_total_loss: 0.3940 - val_cls_loss: 0.2783 - val_box_loss: 0.0012 - val_model_loss: 0.3392
+Epoch 43/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0990 - cls_loss: 0.0335 - box_loss: 2.1403e-04 - model_loss: 0.0442 - val_total_loss: 0.3919 - val_cls_loss: 0.2798 - val_box_loss: 0.0011 - val_model_loss: 0.3371
+Epoch 44/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0924 - cls_loss: 0.0290 - box_loss: 1.7189e-04 - model_loss: 0.0376 - val_total_loss: 0.3776 - val_cls_loss: 0.2663 - val_box_loss: 0.0011 - val_model_loss: 0.3228
+Epoch 45/100
+58/58 [==============================] - 10s 164ms/step - total_loss: 0.0986 - cls_loss: 0.0338 - box_loss: 2.0052e-04 - model_loss: 0.0438 - val_total_loss: 0.3714 - val_cls_loss: 0.2597 - val_box_loss: 0.0011 - val_model_loss: 0.3166
+Epoch 46/100
+58/58 [==============================] - 10s 165ms/step - total_loss: 0.0973 - cls_loss: 0.0318 - box_loss: 2.1465e-04 - model_loss: 0.0426 - val_total_loss: 0.4166 - val_cls_loss: 0.3036 - val_box_loss: 0.0012 - val_model_loss: 0.3618
+Epoch 47/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0911 - cls_loss: 0.0276 - box_loss: 1.7565e-04 - model_loss: 0.0364 - val_total_loss: 0.4060 - val_cls_loss: 0.2948 - val_box_loss: 0.0011 - val_model_loss: 0.3513
+Epoch 48/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0904 - cls_loss: 0.0267 - box_loss: 1.7916e-04 - model_loss: 0.0357 - val_total_loss: 0.3567 - val_cls_loss: 0.2423 - val_box_loss: 0.0012 - val_model_loss: 0.3019
+Epoch 49/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.0914 - cls_loss: 0.0275 - box_loss: 1.8115e-04 - model_loss: 0.0366 - val_total_loss: 0.3682 - val_cls_loss: 0.2583 - val_box_loss: 0.0011 - val_model_loss: 0.3134
+Epoch 50/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0884 - cls_loss: 0.0255 - box_loss: 1.6281e-04 - model_loss: 0.0336 - val_total_loss: 0.3971 - val_cls_loss: 0.2865 - val_box_loss: 0.0011 - val_model_loss: 0.3423
+Epoch 51/100
+58/58 [==============================] - 10s 168ms/step - total_loss: 0.0885 - cls_loss: 0.0251 - box_loss: 1.7322e-04 - model_loss: 0.0338 - val_total_loss: 0.3973 - val_cls_loss: 0.2851 - val_box_loss: 0.0012 - val_model_loss: 0.3426
+Epoch 52/100
+58/58 [==============================] - 10s 166ms/step - total_loss: 0.0823 - cls_loss: 0.0206 - box_loss: 1.4011e-04 - model_loss: 0.0276 - val_total_loss: 0.4406 - val_cls_loss: 0.3295 - val_box_loss: 0.0011 - val_model_loss: 0.3859
+Epoch 53/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0823 - cls_loss: 0.0208 - box_loss: 1.3599e-04 - model_loss: 0.0276 - val_total_loss: 0.4206 - val_cls_loss: 0.3097 - val_box_loss: 0.0011 - val_model_loss: 0.3659
+Epoch 54/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0920 - cls_loss: 0.0286 - box_loss: 1.7394e-04 - model_loss: 0.0373 - val_total_loss: 0.4128 - val_cls_loss: 0.2998 - val_box_loss: 0.0012 - val_model_loss: 0.3581
+Epoch 55/100
+58/58 [==============================] - 9s 160ms/step - total_loss: 0.0919 - cls_loss: 0.0275 - box_loss: 1.9294e-04 - model_loss: 0.0372 - val_total_loss: 0.4181 - val_cls_loss: 0.3057 - val_box_loss: 0.0012 - val_model_loss: 0.3634
+Epoch 56/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.0902 - cls_loss: 0.0263 - box_loss: 1.8331e-04 - model_loss: 0.0355 - val_total_loss: 0.4495 - val_cls_loss: 0.3346 - val_box_loss: 0.0012 - val_model_loss: 0.3947
+Epoch 57/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0830 - cls_loss: 0.0208 - box_loss: 1.5004e-04 - model_loss: 0.0283 - val_total_loss: 0.4688 - val_cls_loss: 0.3553 - val_box_loss: 0.0012 - val_model_loss: 0.4141
+Epoch 58/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0844 - cls_loss: 0.0213 - box_loss: 1.6770e-04 - model_loss: 0.0296 - val_total_loss: 0.4206 - val_cls_loss: 0.3064 - val_box_loss: 0.0012 - val_model_loss: 0.3659
+Epoch 59/100
+58/58 [==============================] - 10s 165ms/step - total_loss: 0.0810 - cls_loss: 0.0194 - box_loss: 1.3744e-04 - model_loss: 0.0263 - val_total_loss: 0.4386 - val_cls_loss: 0.3259 - val_box_loss: 0.0012 - val_model_loss: 0.3839
+Epoch 60/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0951 - cls_loss: 0.0306 - box_loss: 1.9614e-04 - model_loss: 0.0404 - val_total_loss: 0.4522 - val_cls_loss: 0.3364 - val_box_loss: 0.0012 - val_model_loss: 0.3975
+Epoch 61/100
+58/58 [==============================] - 10s 172ms/step - total_loss: 0.0954 - cls_loss: 0.0300 - box_loss: 2.1344e-04 - model_loss: 0.0407 - val_total_loss: 0.4065 - val_cls_loss: 0.2938 - val_box_loss: 0.0012 - val_model_loss: 0.3518
+Epoch 62/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0871 - cls_loss: 0.0240 - box_loss: 1.6807e-04 - model_loss: 0.0324 - val_total_loss: 0.3872 - val_cls_loss: 0.2751 - val_box_loss: 0.0011 - val_model_loss: 0.3325
+Epoch 63/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0879 - cls_loss: 0.0243 - box_loss: 1.7826e-04 - model_loss: 0.0332 - val_total_loss: 0.4237 - val_cls_loss: 0.3096 - val_box_loss: 0.0012 - val_model_loss: 0.3690
+Epoch 64/100
+58/58 [==============================] - 11s 182ms/step - total_loss: 0.0890 - cls_loss: 0.0248 - box_loss: 1.9046e-04 - model_loss: 0.0343 - val_total_loss: 0.4644 - val_cls_loss: 0.3517 - val_box_loss: 0.0012 - val_model_loss: 0.4098
+Epoch 65/100
+58/58 [==============================] - 10s 168ms/step - total_loss: 0.0822 - cls_loss: 0.0205 - box_loss: 1.4229e-04 - model_loss: 0.0276 - val_total_loss: 0.4514 - val_cls_loss: 0.3372 - val_box_loss: 0.0012 - val_model_loss: 0.3967
+Epoch 66/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0771 - cls_loss: 0.0159 - box_loss: 1.3080e-04 - model_loss: 0.0225 - val_total_loss: 0.4708 - val_cls_loss: 0.3569 - val_box_loss: 0.0012 - val_model_loss: 0.4161
+Epoch 67/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0865 - cls_loss: 0.0234 - box_loss: 1.6953e-04 - model_loss: 0.0318 - val_total_loss: 0.4741 - val_cls_loss: 0.3623 - val_box_loss: 0.0011 - val_model_loss: 0.4194
+Epoch 68/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.0853 - cls_loss: 0.0222 - box_loss: 1.6866e-04 - model_loss: 0.0306 - val_total_loss: 0.4597 - val_cls_loss: 0.3457 - val_box_loss: 0.0012 - val_model_loss: 0.4051
+Epoch 69/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0781 - cls_loss: 0.0169 - box_loss: 1.3151e-04 - model_loss: 0.0234 - val_total_loss: 0.4184 - val_cls_loss: 0.3038 - val_box_loss: 0.0012 - val_model_loss: 0.3638
+Epoch 70/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.0753 - cls_loss: 0.0144 - box_loss: 1.2593e-04 - model_loss: 0.0207 - val_total_loss: 0.4311 - val_cls_loss: 0.3157 - val_box_loss: 0.0012 - val_model_loss: 0.3765
+Epoch 71/100
+58/58 [==============================] - 10s 171ms/step - total_loss: 0.0759 - cls_loss: 0.0150 - box_loss: 1.2473e-04 - model_loss: 0.0212 - val_total_loss: 0.4392 - val_cls_loss: 0.3247 - val_box_loss: 0.0012 - val_model_loss: 0.3845
+Epoch 72/100
+58/58 [==============================] - 10s 180ms/step - total_loss: 0.0723 - cls_loss: 0.0121 - box_loss: 1.1128e-04 - model_loss: 0.0177 - val_total_loss: 0.4354 - val_cls_loss: 0.3218 - val_box_loss: 0.0012 - val_model_loss: 0.3808
+Epoch 73/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.0748 - cls_loss: 0.0141 - box_loss: 1.2190e-04 - model_loss: 0.0202 - val_total_loss: 0.4666 - val_cls_loss: 0.3523 - val_box_loss: 0.0012 - val_model_loss: 0.4119
+Epoch 74/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.0854 - cls_loss: 0.0213 - box_loss: 1.8931e-04 - model_loss: 0.0307 - val_total_loss: 0.4744 - val_cls_loss: 0.3593 - val_box_loss: 0.0012 - val_model_loss: 0.4197
+Epoch 75/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0722 - cls_loss: 0.0119 - box_loss: 1.1367e-04 - model_loss: 0.0176 - val_total_loss: 0.4579 - val_cls_loss: 0.3441 - val_box_loss: 0.0012 - val_model_loss: 0.4033
+Epoch 76/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0816 - cls_loss: 0.0194 - box_loss: 1.5098e-04 - model_loss: 0.0270 - val_total_loss: 0.4687 - val_cls_loss: 0.3540 - val_box_loss: 0.0012 - val_model_loss: 0.4141
+Epoch 77/100
+58/58 [==============================] - 9s 162ms/step - total_loss: 0.0740 - cls_loss: 0.0136 - box_loss: 1.1443e-04 - model_loss: 0.0194 - val_total_loss: 0.4685 - val_cls_loss: 0.3520 - val_box_loss: 0.0012 - val_model_loss: 0.4139
+Epoch 78/100
+58/58 [==============================] - 10s 169ms/step - total_loss: 0.0807 - cls_loss: 0.0188 - box_loss: 1.4684e-04 - model_loss: 0.0261 - val_total_loss: 0.4757 - val_cls_loss: 0.3635 - val_box_loss: 0.0012 - val_model_loss: 0.4211
+Epoch 79/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0723 - cls_loss: 0.0122 - box_loss: 1.0911e-04 - model_loss: 0.0177 - val_total_loss: 0.4502 - val_cls_loss: 0.3363 - val_box_loss: 0.0012 - val_model_loss: 0.3956
+Epoch 80/100
+58/58 [==============================] - 9s 162ms/step - total_loss: 0.0878 - cls_loss: 0.0246 - box_loss: 1.7331e-04 - model_loss: 0.0332 - val_total_loss: 0.4763 - val_cls_loss: 0.3634 - val_box_loss: 0.0012 - val_model_loss: 0.4218
+Epoch 81/100
+58/58 [==============================] - 10s 165ms/step - total_loss: 0.0754 - cls_loss: 0.0145 - box_loss: 1.2602e-04 - model_loss: 0.0208 - val_total_loss: 0.4573 - val_cls_loss: 0.3443 - val_box_loss: 0.0012 - val_model_loss: 0.4027
+Epoch 82/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0851 - cls_loss: 0.0225 - box_loss: 1.6131e-04 - model_loss: 0.0305 - val_total_loss: 0.5093 - val_cls_loss: 0.3963 - val_box_loss: 0.0012 - val_model_loss: 0.4547
+Epoch 83/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.0828 - cls_loss: 0.0206 - box_loss: 1.5127e-04 - model_loss: 0.0282 - val_total_loss: 0.3922 - val_cls_loss: 0.2761 - val_box_loss: 0.0012 - val_model_loss: 0.3376
+Epoch 84/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.0770 - cls_loss: 0.0156 - box_loss: 1.3726e-04 - model_loss: 0.0224 - val_total_loss: 0.4139 - val_cls_loss: 0.2999 - val_box_loss: 0.0012 - val_model_loss: 0.3594
+Epoch 85/100
+58/58 [==============================] - 10s 171ms/step - total_loss: 0.0891 - cls_loss: 0.0249 - box_loss: 1.9203e-04 - model_loss: 0.0345 - val_total_loss: 0.3845 - val_cls_loss: 0.2690 - val_box_loss: 0.0012 - val_model_loss: 0.3299
+Epoch 86/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0809 - cls_loss: 0.0187 - box_loss: 1.5295e-04 - model_loss: 0.0263 - val_total_loss: 0.4956 - val_cls_loss: 0.3830 - val_box_loss: 0.0012 - val_model_loss: 0.4410
+Epoch 87/100
+58/58 [==============================] - 9s 153ms/step - total_loss: 0.0750 - cls_loss: 0.0139 - box_loss: 1.3147e-04 - model_loss: 0.0205 - val_total_loss: 0.4752 - val_cls_loss: 0.3636 - val_box_loss: 0.0011 - val_model_loss: 0.4206
+Epoch 88/100
+58/58 [==============================] - 10s 164ms/step - total_loss: 0.0719 - cls_loss: 0.0116 - box_loss: 1.1507e-04 - model_loss: 0.0173 - val_total_loss: 0.4785 - val_cls_loss: 0.3651 - val_box_loss: 0.0012 - val_model_loss: 0.4239
+Epoch 89/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0716 - cls_loss: 0.0110 - box_loss: 1.2134e-04 - model_loss: 0.0171 - val_total_loss: 0.4705 - val_cls_loss: 0.3568 - val_box_loss: 0.0012 - val_model_loss: 0.4159
+Epoch 90/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.0709 - cls_loss: 0.0111 - box_loss: 1.0513e-04 - model_loss: 0.0163 - val_total_loss: 0.4822 - val_cls_loss: 0.3693 - val_box_loss: 0.0012 - val_model_loss: 0.4277
+Epoch 91/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0724 - cls_loss: 0.0120 - box_loss: 1.1755e-04 - model_loss: 0.0179 - val_total_loss: 0.4846 - val_cls_loss: 0.3707 - val_box_loss: 0.0012 - val_model_loss: 0.4301
+Epoch 92/100
+58/58 [==============================] - 11s 180ms/step - total_loss: 0.0713 - cls_loss: 0.0109 - box_loss: 1.1785e-04 - model_loss: 0.0168 - val_total_loss: 0.4797 - val_cls_loss: 0.3647 - val_box_loss: 0.0012 - val_model_loss: 0.4252
+Epoch 93/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0720 - cls_loss: 0.0113 - box_loss: 1.2314e-04 - model_loss: 0.0175 - val_total_loss: 0.5127 - val_cls_loss: 0.3989 - val_box_loss: 0.0012 - val_model_loss: 0.4581
+Epoch 94/100
+58/58 [==============================] - 11s 179ms/step - total_loss: 0.0727 - cls_loss: 0.0121 - box_loss: 1.2106e-04 - model_loss: 0.0181 - val_total_loss: 0.4858 - val_cls_loss: 0.3714 - val_box_loss: 0.0012 - val_model_loss: 0.4313
+Epoch 95/100
+58/58 [==============================] - 11s 181ms/step - total_loss: 0.0688 - cls_loss: 0.0090 - box_loss: 1.0485e-04 - model_loss: 0.0143 - val_total_loss: 0.5133 - val_cls_loss: 0.3996 - val_box_loss: 0.0012 - val_model_loss: 0.4588
+Epoch 96/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.0794 - cls_loss: 0.0179 - box_loss: 1.3938e-04 - model_loss: 0.0249 - val_total_loss: 0.5106 - val_cls_loss: 0.3938 - val_box_loss: 0.0012 - val_model_loss: 0.4561
+Epoch 97/100
+58/58 [==============================] - 11s 184ms/step - total_loss: 0.0961 - cls_loss: 0.0294 - box_loss: 2.4545e-04 - model_loss: 0.0417 - val_total_loss: 0.3818 - val_cls_loss: 0.2698 - val_box_loss: 0.0012 - val_model_loss: 0.3273
+Epoch 98/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0697 - cls_loss: 0.0098 - box_loss: 1.0849e-04 - model_loss: 0.0152 - val_total_loss: 0.4305 - val_cls_loss: 0.3191 - val_box_loss: 0.0011 - val_model_loss: 0.3760
+Epoch 99/100
+58/58 [==============================] - 9s 154ms/step - total_loss: 0.0684 - cls_loss: 0.0091 - box_loss: 9.6806e-05 - model_loss: 0.0139 - val_total_loss: 0.4636 - val_cls_loss: 0.3514 - val_box_loss: 0.0012 - val_model_loss: 0.4091
+Epoch 100/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.0729 - cls_loss: 0.0124 - box_loss: 1.2146e-04 - model_loss: 0.0185 - val_total_loss: 0.4777 - val_cls_loss: 0.3659 - val_box_loss: 0.0011 - val_model_loss: 0.4232
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>TransferLearning_model.evaluate_model(2)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+21/21 [==============================] - 2s 39ms/step - total_loss: 0.3769 - cls_loss: 0.2622 - box_loss: 0.0012 - model_loss: 0.3225
+creating index...
+index created!
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=0.21s).
+Accumulating evaluation results...
+DONE (t=0.02s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.774
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.955
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.905
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.778
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.747
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.834
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.834
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.834
+Validation loss: [0.3769497871398926, 0.2621723413467407, 0.0012059812434017658, 0.32247138023376465]
+Validation metrics: {&#39;AP&#39;: 0.773797, &#39;AP50&#39;: 0.9550259, &#39;AP75&#39;: 0.9054219, &#39;APs&#39;: -1.0, &#39;APm&#39;: -1.0, &#39;APl&#39;: 0.77800596, &#39;ARmax1&#39;: 0.7468085, &#39;ARmax10&#39;: 0.83404255, &#39;ARmax100&#39;: 0.83404255, &#39;ARs&#39;: -1.0, &#39;ARm&#39;: -1.0, &#39;ARl&#39;: 0.83404255}
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>TransferLearning_model.export_model()
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Plotting-all-loss-values-using-matplotlib">
+<h3>Plotting all loss values using matplotlib<a class="headerlink" href="#Plotting-all-loss-values-using-matplotlib" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import re
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+# taken from the training log
+txt_file = &quot;&quot;&quot;
+Epoch 1/100
+58/58 [==============================] - 56s 252ms/step - total_loss: 1.6840 - cls_loss: 1.4160 - box_loss: 0.0043 - model_loss: 1.6291 - val_total_loss: 1.3220 - val_cls_loss: 1.1915 - val_box_loss: 0.0015 - val_model_loss: 1.2671
+Epoch 2/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 1.3179 - cls_loss: 1.1044 - box_loss: 0.0032 - model_loss: 1.2630 - val_total_loss: 1.0755 - val_cls_loss: 0.9413 - val_box_loss: 0.0016 - val_model_loss: 1.0205
+Epoch 3/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 1.0288 - cls_loss: 0.8628 - box_loss: 0.0022 - model_loss: 0.9738 - val_total_loss: 0.8156 - val_cls_loss: 0.6887 - val_box_loss: 0.0014 - val_model_loss: 0.7607
+Epoch 4/100
+58/58 [==============================] - 10s 164ms/step - total_loss: 0.7748 - cls_loss: 0.6346 - box_loss: 0.0017 - model_loss: 0.7198 - val_total_loss: 0.6834 - val_cls_loss: 0.5618 - val_box_loss: 0.0013 - val_model_loss: 0.6285
+Epoch 5/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.5706 - cls_loss: 0.4493 - box_loss: 0.0013 - model_loss: 0.5156 - val_total_loss: 0.5903 - val_cls_loss: 0.4719 - val_box_loss: 0.0013 - val_model_loss: 0.5354
+Epoch 6/100
+58/58 [==============================] - 10s 172ms/step - total_loss: 0.4468 - cls_loss: 0.3364 - box_loss: 0.0011 - model_loss: 0.3918 - val_total_loss: 0.5029 - val_cls_loss: 0.3826 - val_box_loss: 0.0013 - val_model_loss: 0.4479
+Epoch 7/100
+58/58 [==============================] - 9s 152ms/step - total_loss: 0.3687 - cls_loss: 0.2690 - box_loss: 8.9543e-04 - model_loss: 0.3138 - val_total_loss: 0.4401 - val_cls_loss: 0.3230 - val_box_loss: 0.0012 - val_model_loss: 0.3851
+Epoch 8/100
+58/58 [==============================] - 10s 166ms/step - total_loss: 0.3224 - cls_loss: 0.2254 - box_loss: 8.4212e-04 - model_loss: 0.2675 - val_total_loss: 0.4191 - val_cls_loss: 0.3006 - val_box_loss: 0.0013 - val_model_loss: 0.3641
+Epoch 9/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.2824 - cls_loss: 0.1937 - box_loss: 6.7377e-04 - model_loss: 0.2274 - val_total_loss: 0.3825 - val_cls_loss: 0.2630 - val_box_loss: 0.0013 - val_model_loss: 0.3276
+Epoch 10/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.2482 - cls_loss: 0.1637 - box_loss: 5.9065e-04 - model_loss: 0.1932 - val_total_loss: 0.3733 - val_cls_loss: 0.2519 - val_box_loss: 0.0013 - val_model_loss: 0.3184
+Epoch 11/100
+58/58 [==============================] - 9s 153ms/step - total_loss: 0.2254 - cls_loss: 0.1436 - box_loss: 5.3736e-04 - model_loss: 0.1705 - val_total_loss: 0.3483 - val_cls_loss: 0.2275 - val_box_loss: 0.0013 - val_model_loss: 0.2934
+Epoch 12/100
+58/58 [==============================] - 11s 179ms/step - total_loss: 0.2134 - cls_loss: 0.1337 - box_loss: 4.9445e-04 - model_loss: 0.1584 - val_total_loss: 0.3503 - val_cls_loss: 0.2308 - val_box_loss: 0.0013 - val_model_loss: 0.2954
+Epoch 13/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.2008 - cls_loss: 0.1197 - box_loss: 5.2362e-04 - model_loss: 0.1459 - val_total_loss: 0.3455 - val_cls_loss: 0.2242 - val_box_loss: 0.0013 - val_model_loss: 0.2906
+Epoch 14/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.1877 - cls_loss: 0.1109 - box_loss: 4.3546e-04 - model_loss: 0.1327 - val_total_loss: 0.3372 - val_cls_loss: 0.2169 - val_box_loss: 0.0013 - val_model_loss: 0.2823
+Epoch 15/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1726 - cls_loss: 0.0985 - box_loss: 3.8342e-04 - model_loss: 0.1177 - val_total_loss: 0.3672 - val_cls_loss: 0.2423 - val_box_loss: 0.0014 - val_model_loss: 0.3123
+Epoch 16/100
+58/58 [==============================] - 9s 151ms/step - total_loss: 0.1703 - cls_loss: 0.0962 - box_loss: 3.8260e-04 - model_loss: 0.1154 - val_total_loss: 0.3559 - val_cls_loss: 0.2375 - val_box_loss: 0.0013 - val_model_loss: 0.3010
+Epoch 17/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1692 - cls_loss: 0.0941 - box_loss: 4.0279e-04 - model_loss: 0.1143 - val_total_loss: 0.3512 - val_cls_loss: 0.2347 - val_box_loss: 0.0012 - val_model_loss: 0.2962
+Epoch 18/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.1515 - cls_loss: 0.0808 - box_loss: 3.1526e-04 - model_loss: 0.0966 - val_total_loss: 0.3413 - val_cls_loss: 0.2211 - val_box_loss: 0.0013 - val_model_loss: 0.2864
+Epoch 19/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.1478 - cls_loss: 0.0760 - box_loss: 3.3900e-04 - model_loss: 0.0929 - val_total_loss: 0.3312 - val_cls_loss: 0.2146 - val_box_loss: 0.0012 - val_model_loss: 0.2763
+Epoch 20/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.1476 - cls_loss: 0.0749 - box_loss: 3.5538e-04 - model_loss: 0.0927 - val_total_loss: 0.3337 - val_cls_loss: 0.2179 - val_box_loss: 0.0012 - val_model_loss: 0.2788
+Epoch 21/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.1448 - cls_loss: 0.0719 - box_loss: 3.5935e-04 - model_loss: 0.0899 - val_total_loss: 0.3377 - val_cls_loss: 0.2228 - val_box_loss: 0.0012 - val_model_loss: 0.2828
+Epoch 22/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.1327 - cls_loss: 0.0636 - box_loss: 2.8470e-04 - model_loss: 0.0778 - val_total_loss: 0.3492 - val_cls_loss: 0.2320 - val_box_loss: 0.0012 - val_model_loss: 0.2943
+Epoch 23/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.1315 - cls_loss: 0.0617 - box_loss: 2.9893e-04 - model_loss: 0.0766 - val_total_loss: 0.3484 - val_cls_loss: 0.2308 - val_box_loss: 0.0013 - val_model_loss: 0.2935
+Epoch 24/100
+58/58 [==============================] - 11s 182ms/step - total_loss: 0.1334 - cls_loss: 0.0627 - box_loss: 3.1571e-04 - model_loss: 0.0785 - val_total_loss: 0.3256 - val_cls_loss: 0.2088 - val_box_loss: 0.0012 - val_model_loss: 0.2707
+Epoch 25/100
+58/58 [==============================] - 11s 179ms/step - total_loss: 0.1261 - cls_loss: 0.0573 - box_loss: 2.7877e-04 - model_loss: 0.0712 - val_total_loss: 0.3409 - val_cls_loss: 0.2243 - val_box_loss: 0.0012 - val_model_loss: 0.2860
+Epoch 26/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.1251 - cls_loss: 0.0553 - box_loss: 2.9841e-04 - model_loss: 0.0702 - val_total_loss: 0.3539 - val_cls_loss: 0.2358 - val_box_loss: 0.0013 - val_model_loss: 0.2990
+Epoch 27/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1201 - cls_loss: 0.0526 - box_loss: 2.5220e-04 - model_loss: 0.0652 - val_total_loss: 0.3367 - val_cls_loss: 0.2183 - val_box_loss: 0.0013 - val_model_loss: 0.2819
+Epoch 28/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.1321 - cls_loss: 0.0596 - box_loss: 3.5220e-04 - model_loss: 0.0772 - val_total_loss: 0.3546 - val_cls_loss: 0.2411 - val_box_loss: 0.0012 - val_model_loss: 0.2998
+Epoch 29/100
+58/58 [==============================] - 11s 180ms/step - total_loss: 0.1235 - cls_loss: 0.0536 - box_loss: 3.0165e-04 - model_loss: 0.0687 - val_total_loss: 0.3337 - val_cls_loss: 0.2186 - val_box_loss: 0.0012 - val_model_loss: 0.2788
+Epoch 30/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.1185 - cls_loss: 0.0497 - box_loss: 2.8005e-04 - model_loss: 0.0637 - val_total_loss: 0.3595 - val_cls_loss: 0.2388 - val_box_loss: 0.0013 - val_model_loss: 0.3047
+Epoch 31/100
+58/58 [==============================] - 10s 166ms/step - total_loss: 0.1141 - cls_loss: 0.0478 - box_loss: 2.2938e-04 - model_loss: 0.0593 - val_total_loss: 0.3671 - val_cls_loss: 0.2495 - val_box_loss: 0.0013 - val_model_loss: 0.3123
+Epoch 32/100
+58/58 [==============================] - 10s 161ms/step - total_loss: 0.1108 - cls_loss: 0.0441 - box_loss: 2.3839e-04 - model_loss: 0.0560 - val_total_loss: 0.3715 - val_cls_loss: 0.2531 - val_box_loss: 0.0013 - val_model_loss: 0.3166
+Epoch 33/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.1192 - cls_loss: 0.0502 - box_loss: 2.8361e-04 - model_loss: 0.0644 - val_total_loss: 0.3840 - val_cls_loss: 0.2656 - val_box_loss: 0.0013 - val_model_loss: 0.3292
+Epoch 34/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.1068 - cls_loss: 0.0404 - box_loss: 2.3252e-04 - model_loss: 0.0520 - val_total_loss: 0.3632 - val_cls_loss: 0.2448 - val_box_loss: 0.0013 - val_model_loss: 0.3084
+Epoch 35/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.1090 - cls_loss: 0.0422 - box_loss: 2.3928e-04 - model_loss: 0.0542 - val_total_loss: 0.3537 - val_cls_loss: 0.2356 - val_box_loss: 0.0013 - val_model_loss: 0.2989
+Epoch 36/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.0979 - cls_loss: 0.0339 - box_loss: 1.8403e-04 - model_loss: 0.0431 - val_total_loss: 0.3536 - val_cls_loss: 0.2343 - val_box_loss: 0.0013 - val_model_loss: 0.2988
+Epoch 37/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.1079 - cls_loss: 0.0413 - box_loss: 2.3589e-04 - model_loss: 0.0531 - val_total_loss: 0.3650 - val_cls_loss: 0.2485 - val_box_loss: 0.0012 - val_model_loss: 0.3102
+Epoch 38/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.1102 - cls_loss: 0.0425 - box_loss: 2.5795e-04 - model_loss: 0.0554 - val_total_loss: 0.3840 - val_cls_loss: 0.2676 - val_box_loss: 0.0012 - val_model_loss: 0.3292
+Epoch 39/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.1170 - cls_loss: 0.0485 - box_loss: 2.7531e-04 - model_loss: 0.0622 - val_total_loss: 0.4279 - val_cls_loss: 0.3101 - val_box_loss: 0.0013 - val_model_loss: 0.3731
+Epoch 40/100
+58/58 [==============================] - 10s 172ms/step - total_loss: 0.1080 - cls_loss: 0.0407 - box_loss: 2.5054e-04 - model_loss: 0.0532 - val_total_loss: 0.3845 - val_cls_loss: 0.2709 - val_box_loss: 0.0012 - val_model_loss: 0.3297
+Epoch 41/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0958 - cls_loss: 0.0318 - box_loss: 1.8255e-04 - model_loss: 0.0410 - val_total_loss: 0.3940 - val_cls_loss: 0.2801 - val_box_loss: 0.0012 - val_model_loss: 0.3392
+Epoch 42/100
+58/58 [==============================] - 10s 171ms/step - total_loss: 0.1120 - cls_loss: 0.0452 - box_loss: 2.3984e-04 - model_loss: 0.0572 - val_total_loss: 0.3940 - val_cls_loss: 0.2783 - val_box_loss: 0.0012 - val_model_loss: 0.3392
+Epoch 43/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0990 - cls_loss: 0.0335 - box_loss: 2.1403e-04 - model_loss: 0.0442 - val_total_loss: 0.3919 - val_cls_loss: 0.2798 - val_box_loss: 0.0011 - val_model_loss: 0.3371
+Epoch 44/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0924 - cls_loss: 0.0290 - box_loss: 1.7189e-04 - model_loss: 0.0376 - val_total_loss: 0.3776 - val_cls_loss: 0.2663 - val_box_loss: 0.0011 - val_model_loss: 0.3228
+Epoch 45/100
+58/58 [==============================] - 10s 164ms/step - total_loss: 0.0986 - cls_loss: 0.0338 - box_loss: 2.0052e-04 - model_loss: 0.0438 - val_total_loss: 0.3714 - val_cls_loss: 0.2597 - val_box_loss: 0.0011 - val_model_loss: 0.3166
+Epoch 46/100
+58/58 [==============================] - 10s 165ms/step - total_loss: 0.0973 - cls_loss: 0.0318 - box_loss: 2.1465e-04 - model_loss: 0.0426 - val_total_loss: 0.4166 - val_cls_loss: 0.3036 - val_box_loss: 0.0012 - val_model_loss: 0.3618
+Epoch 47/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0911 - cls_loss: 0.0276 - box_loss: 1.7565e-04 - model_loss: 0.0364 - val_total_loss: 0.4060 - val_cls_loss: 0.2948 - val_box_loss: 0.0011 - val_model_loss: 0.3513
+Epoch 48/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0904 - cls_loss: 0.0267 - box_loss: 1.7916e-04 - model_loss: 0.0357 - val_total_loss: 0.3567 - val_cls_loss: 0.2423 - val_box_loss: 0.0012 - val_model_loss: 0.3019
+Epoch 49/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.0914 - cls_loss: 0.0275 - box_loss: 1.8115e-04 - model_loss: 0.0366 - val_total_loss: 0.3682 - val_cls_loss: 0.2583 - val_box_loss: 0.0011 - val_model_loss: 0.3134
+Epoch 50/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0884 - cls_loss: 0.0255 - box_loss: 1.6281e-04 - model_loss: 0.0336 - val_total_loss: 0.3971 - val_cls_loss: 0.2865 - val_box_loss: 0.0011 - val_model_loss: 0.3423
+Epoch 51/100
+58/58 [==============================] - 10s 168ms/step - total_loss: 0.0885 - cls_loss: 0.0251 - box_loss: 1.7322e-04 - model_loss: 0.0338 - val_total_loss: 0.3973 - val_cls_loss: 0.2851 - val_box_loss: 0.0012 - val_model_loss: 0.3426
+Epoch 52/100
+58/58 [==============================] - 10s 166ms/step - total_loss: 0.0823 - cls_loss: 0.0206 - box_loss: 1.4011e-04 - model_loss: 0.0276 - val_total_loss: 0.4406 - val_cls_loss: 0.3295 - val_box_loss: 0.0011 - val_model_loss: 0.3859
+Epoch 53/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0823 - cls_loss: 0.0208 - box_loss: 1.3599e-04 - model_loss: 0.0276 - val_total_loss: 0.4206 - val_cls_loss: 0.3097 - val_box_loss: 0.0011 - val_model_loss: 0.3659
+Epoch 54/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0920 - cls_loss: 0.0286 - box_loss: 1.7394e-04 - model_loss: 0.0373 - val_total_loss: 0.4128 - val_cls_loss: 0.2998 - val_box_loss: 0.0012 - val_model_loss: 0.3581
+Epoch 55/100
+58/58 [==============================] - 9s 160ms/step - total_loss: 0.0919 - cls_loss: 0.0275 - box_loss: 1.9294e-04 - model_loss: 0.0372 - val_total_loss: 0.4181 - val_cls_loss: 0.3057 - val_box_loss: 0.0012 - val_model_loss: 0.3634
+Epoch 56/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.0902 - cls_loss: 0.0263 - box_loss: 1.8331e-04 - model_loss: 0.0355 - val_total_loss: 0.4495 - val_cls_loss: 0.3346 - val_box_loss: 0.0012 - val_model_loss: 0.3947
+Epoch 57/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0830 - cls_loss: 0.0208 - box_loss: 1.5004e-04 - model_loss: 0.0283 - val_total_loss: 0.4688 - val_cls_loss: 0.3553 - val_box_loss: 0.0012 - val_model_loss: 0.4141
+Epoch 58/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0844 - cls_loss: 0.0213 - box_loss: 1.6770e-04 - model_loss: 0.0296 - val_total_loss: 0.4206 - val_cls_loss: 0.3064 - val_box_loss: 0.0012 - val_model_loss: 0.3659
+Epoch 59/100
+58/58 [==============================] - 10s 165ms/step - total_loss: 0.0810 - cls_loss: 0.0194 - box_loss: 1.3744e-04 - model_loss: 0.0263 - val_total_loss: 0.4386 - val_cls_loss: 0.3259 - val_box_loss: 0.0012 - val_model_loss: 0.3839
+Epoch 60/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0951 - cls_loss: 0.0306 - box_loss: 1.9614e-04 - model_loss: 0.0404 - val_total_loss: 0.4522 - val_cls_loss: 0.3364 - val_box_loss: 0.0012 - val_model_loss: 0.3975
+Epoch 61/100
+58/58 [==============================] - 10s 172ms/step - total_loss: 0.0954 - cls_loss: 0.0300 - box_loss: 2.1344e-04 - model_loss: 0.0407 - val_total_loss: 0.4065 - val_cls_loss: 0.2938 - val_box_loss: 0.0012 - val_model_loss: 0.3518
+Epoch 62/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0871 - cls_loss: 0.0240 - box_loss: 1.6807e-04 - model_loss: 0.0324 - val_total_loss: 0.3872 - val_cls_loss: 0.2751 - val_box_loss: 0.0011 - val_model_loss: 0.3325
+Epoch 63/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0879 - cls_loss: 0.0243 - box_loss: 1.7826e-04 - model_loss: 0.0332 - val_total_loss: 0.4237 - val_cls_loss: 0.3096 - val_box_loss: 0.0012 - val_model_loss: 0.3690
+Epoch 64/100
+58/58 [==============================] - 11s 182ms/step - total_loss: 0.0890 - cls_loss: 0.0248 - box_loss: 1.9046e-04 - model_loss: 0.0343 - val_total_loss: 0.4644 - val_cls_loss: 0.3517 - val_box_loss: 0.0012 - val_model_loss: 0.4098
+Epoch 65/100
+58/58 [==============================] - 10s 168ms/step - total_loss: 0.0822 - cls_loss: 0.0205 - box_loss: 1.4229e-04 - model_loss: 0.0276 - val_total_loss: 0.4514 - val_cls_loss: 0.3372 - val_box_loss: 0.0012 - val_model_loss: 0.3967
+Epoch 66/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0771 - cls_loss: 0.0159 - box_loss: 1.3080e-04 - model_loss: 0.0225 - val_total_loss: 0.4708 - val_cls_loss: 0.3569 - val_box_loss: 0.0012 - val_model_loss: 0.4161
+Epoch 67/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0865 - cls_loss: 0.0234 - box_loss: 1.6953e-04 - model_loss: 0.0318 - val_total_loss: 0.4741 - val_cls_loss: 0.3623 - val_box_loss: 0.0011 - val_model_loss: 0.4194
+Epoch 68/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.0853 - cls_loss: 0.0222 - box_loss: 1.6866e-04 - model_loss: 0.0306 - val_total_loss: 0.4597 - val_cls_loss: 0.3457 - val_box_loss: 0.0012 - val_model_loss: 0.4051
+Epoch 69/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0781 - cls_loss: 0.0169 - box_loss: 1.3151e-04 - model_loss: 0.0234 - val_total_loss: 0.4184 - val_cls_loss: 0.3038 - val_box_loss: 0.0012 - val_model_loss: 0.3638
+Epoch 70/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.0753 - cls_loss: 0.0144 - box_loss: 1.2593e-04 - model_loss: 0.0207 - val_total_loss: 0.4311 - val_cls_loss: 0.3157 - val_box_loss: 0.0012 - val_model_loss: 0.3765
+Epoch 71/100
+58/58 [==============================] - 10s 171ms/step - total_loss: 0.0759 - cls_loss: 0.0150 - box_loss: 1.2473e-04 - model_loss: 0.0212 - val_total_loss: 0.4392 - val_cls_loss: 0.3247 - val_box_loss: 0.0012 - val_model_loss: 0.3845
+Epoch 72/100
+58/58 [==============================] - 10s 180ms/step - total_loss: 0.0723 - cls_loss: 0.0121 - box_loss: 1.1128e-04 - model_loss: 0.0177 - val_total_loss: 0.4354 - val_cls_loss: 0.3218 - val_box_loss: 0.0012 - val_model_loss: 0.3808
+Epoch 73/100
+58/58 [==============================] - 10s 173ms/step - total_loss: 0.0748 - cls_loss: 0.0141 - box_loss: 1.2190e-04 - model_loss: 0.0202 - val_total_loss: 0.4666 - val_cls_loss: 0.3523 - val_box_loss: 0.0012 - val_model_loss: 0.4119
+Epoch 74/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.0854 - cls_loss: 0.0213 - box_loss: 1.8931e-04 - model_loss: 0.0307 - val_total_loss: 0.4744 - val_cls_loss: 0.3593 - val_box_loss: 0.0012 - val_model_loss: 0.4197
+Epoch 75/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0722 - cls_loss: 0.0119 - box_loss: 1.1367e-04 - model_loss: 0.0176 - val_total_loss: 0.4579 - val_cls_loss: 0.3441 - val_box_loss: 0.0012 - val_model_loss: 0.4033
+Epoch 76/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0816 - cls_loss: 0.0194 - box_loss: 1.5098e-04 - model_loss: 0.0270 - val_total_loss: 0.4687 - val_cls_loss: 0.3540 - val_box_loss: 0.0012 - val_model_loss: 0.4141
+Epoch 77/100
+58/58 [==============================] - 9s 162ms/step - total_loss: 0.0740 - cls_loss: 0.0136 - box_loss: 1.1443e-04 - model_loss: 0.0194 - val_total_loss: 0.4685 - val_cls_loss: 0.3520 - val_box_loss: 0.0012 - val_model_loss: 0.4139
+Epoch 78/100
+58/58 [==============================] - 10s 169ms/step - total_loss: 0.0807 - cls_loss: 0.0188 - box_loss: 1.4684e-04 - model_loss: 0.0261 - val_total_loss: 0.4757 - val_cls_loss: 0.3635 - val_box_loss: 0.0012 - val_model_loss: 0.4211
+Epoch 79/100
+58/58 [==============================] - 10s 177ms/step - total_loss: 0.0723 - cls_loss: 0.0122 - box_loss: 1.0911e-04 - model_loss: 0.0177 - val_total_loss: 0.4502 - val_cls_loss: 0.3363 - val_box_loss: 0.0012 - val_model_loss: 0.3956
+Epoch 80/100
+58/58 [==============================] - 9s 162ms/step - total_loss: 0.0878 - cls_loss: 0.0246 - box_loss: 1.7331e-04 - model_loss: 0.0332 - val_total_loss: 0.4763 - val_cls_loss: 0.3634 - val_box_loss: 0.0012 - val_model_loss: 0.4218
+Epoch 81/100
+58/58 [==============================] - 10s 165ms/step - total_loss: 0.0754 - cls_loss: 0.0145 - box_loss: 1.2602e-04 - model_loss: 0.0208 - val_total_loss: 0.4573 - val_cls_loss: 0.3443 - val_box_loss: 0.0012 - val_model_loss: 0.4027
+Epoch 82/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0851 - cls_loss: 0.0225 - box_loss: 1.6131e-04 - model_loss: 0.0305 - val_total_loss: 0.5093 - val_cls_loss: 0.3963 - val_box_loss: 0.0012 - val_model_loss: 0.4547
+Epoch 83/100
+58/58 [==============================] - 10s 179ms/step - total_loss: 0.0828 - cls_loss: 0.0206 - box_loss: 1.5127e-04 - model_loss: 0.0282 - val_total_loss: 0.3922 - val_cls_loss: 0.2761 - val_box_loss: 0.0012 - val_model_loss: 0.3376
+Epoch 84/100
+58/58 [==============================] - 9s 155ms/step - total_loss: 0.0770 - cls_loss: 0.0156 - box_loss: 1.3726e-04 - model_loss: 0.0224 - val_total_loss: 0.4139 - val_cls_loss: 0.2999 - val_box_loss: 0.0012 - val_model_loss: 0.3594
+Epoch 85/100
+58/58 [==============================] - 10s 171ms/step - total_loss: 0.0891 - cls_loss: 0.0249 - box_loss: 1.9203e-04 - model_loss: 0.0345 - val_total_loss: 0.3845 - val_cls_loss: 0.2690 - val_box_loss: 0.0012 - val_model_loss: 0.3299
+Epoch 86/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0809 - cls_loss: 0.0187 - box_loss: 1.5295e-04 - model_loss: 0.0263 - val_total_loss: 0.4956 - val_cls_loss: 0.3830 - val_box_loss: 0.0012 - val_model_loss: 0.4410
+Epoch 87/100
+58/58 [==============================] - 9s 153ms/step - total_loss: 0.0750 - cls_loss: 0.0139 - box_loss: 1.3147e-04 - model_loss: 0.0205 - val_total_loss: 0.4752 - val_cls_loss: 0.3636 - val_box_loss: 0.0011 - val_model_loss: 0.4206
+Epoch 88/100
+58/58 [==============================] - 10s 164ms/step - total_loss: 0.0719 - cls_loss: 0.0116 - box_loss: 1.1507e-04 - model_loss: 0.0173 - val_total_loss: 0.4785 - val_cls_loss: 0.3651 - val_box_loss: 0.0012 - val_model_loss: 0.4239
+Epoch 89/100
+58/58 [==============================] - 10s 176ms/step - total_loss: 0.0716 - cls_loss: 0.0110 - box_loss: 1.2134e-04 - model_loss: 0.0171 - val_total_loss: 0.4705 - val_cls_loss: 0.3568 - val_box_loss: 0.0012 - val_model_loss: 0.4159
+Epoch 90/100
+58/58 [==============================] - 10s 167ms/step - total_loss: 0.0709 - cls_loss: 0.0111 - box_loss: 1.0513e-04 - model_loss: 0.0163 - val_total_loss: 0.4822 - val_cls_loss: 0.3693 - val_box_loss: 0.0012 - val_model_loss: 0.4277
+Epoch 91/100
+58/58 [==============================] - 10s 163ms/step - total_loss: 0.0724 - cls_loss: 0.0120 - box_loss: 1.1755e-04 - model_loss: 0.0179 - val_total_loss: 0.4846 - val_cls_loss: 0.3707 - val_box_loss: 0.0012 - val_model_loss: 0.4301
+Epoch 92/100
+58/58 [==============================] - 11s 180ms/step - total_loss: 0.0713 - cls_loss: 0.0109 - box_loss: 1.1785e-04 - model_loss: 0.0168 - val_total_loss: 0.4797 - val_cls_loss: 0.3647 - val_box_loss: 0.0012 - val_model_loss: 0.4252
+Epoch 93/100
+58/58 [==============================] - 10s 175ms/step - total_loss: 0.0720 - cls_loss: 0.0113 - box_loss: 1.2314e-04 - model_loss: 0.0175 - val_total_loss: 0.5127 - val_cls_loss: 0.3989 - val_box_loss: 0.0012 - val_model_loss: 0.4581
+Epoch 94/100
+58/58 [==============================] - 11s 179ms/step - total_loss: 0.0727 - cls_loss: 0.0121 - box_loss: 1.2106e-04 - model_loss: 0.0181 - val_total_loss: 0.4858 - val_cls_loss: 0.3714 - val_box_loss: 0.0012 - val_model_loss: 0.4313
+Epoch 95/100
+58/58 [==============================] - 11s 181ms/step - total_loss: 0.0688 - cls_loss: 0.0090 - box_loss: 1.0485e-04 - model_loss: 0.0143 - val_total_loss: 0.5133 - val_cls_loss: 0.3996 - val_box_loss: 0.0012 - val_model_loss: 0.4588
+Epoch 96/100
+58/58 [==============================] - 10s 170ms/step - total_loss: 0.0794 - cls_loss: 0.0179 - box_loss: 1.3938e-04 - model_loss: 0.0249 - val_total_loss: 0.5106 - val_cls_loss: 0.3938 - val_box_loss: 0.0012 - val_model_loss: 0.4561
+Epoch 97/100
+58/58 [==============================] - 11s 184ms/step - total_loss: 0.0961 - cls_loss: 0.0294 - box_loss: 2.4545e-04 - model_loss: 0.0417 - val_total_loss: 0.3818 - val_cls_loss: 0.2698 - val_box_loss: 0.0012 - val_model_loss: 0.3273
+Epoch 98/100
+58/58 [==============================] - 10s 178ms/step - total_loss: 0.0697 - cls_loss: 0.0098 - box_loss: 1.0849e-04 - model_loss: 0.0152 - val_total_loss: 0.4305 - val_cls_loss: 0.3191 - val_box_loss: 0.0011 - val_model_loss: 0.3760
+Epoch 99/100
+58/58 [==============================] - 9s 154ms/step - total_loss: 0.0684 - cls_loss: 0.0091 - box_loss: 9.6806e-05 - model_loss: 0.0139 - val_total_loss: 0.4636 - val_cls_loss: 0.3514 - val_box_loss: 0.0012 - val_model_loss: 0.4091
+Epoch 100/100
+58/58 [==============================] - 10s 174ms/step - total_loss: 0.0729 - cls_loss: 0.0124 - box_loss: 1.2146e-04 - model_loss: 0.0185 - val_total_loss: 0.4777 - val_cls_loss: 0.3659 - val_box_loss: 0.0011 - val_model_loss: 0.4232
+&quot;&quot;&quot;
+pattern = r&quot;total_loss: (\d+\.\d+(?:e[+-]?\d+)?) - cls_loss: (\d+\.\d+(?:e[+-]?\d+)?) - box_loss: (\d+\.\d+(?:e[+-]?\d+)?) - model_loss: (\d+\.\d+(?:e[+-]?\d+)?) - val_total_loss: (\d+\.\d+(?:e[+-]?\d+)?) - val_cls_loss: (\d+\.\d+(?:e[+-]?\d+)?) - val_box_loss: (\d+\.\d+(?:e[+-]?\d+)?) - val_model_loss: (\d+\.\d+(?:e[+-]?\d+)?)&quot;
+
+matches = re.findall(pattern, txt_file)
+# Convert the matched strings to float and separate them into lists
+total_losses, cls_losses, box_losses, model_losses, val_total_losses, val_cls_losses, val_box_losses, val_model_losses = zip(*((float(total), float(cls), float(box), float(model), float(val_total), float(val_cls), float(val_box), float(val_model))
+                                                           for total, cls, box, model,val_total, val_cls, val_box, val_model in matches))
+
+epochs = range(1, len(total_losses) + 1)
+
+plt.figure(figsize=(10,9))
+plt.plot(epochs, total_losses, (&#39;#DB2E4B&#39;), label=&quot;Total Loss&quot;, linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Total Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+plt.subplot(4, 2, 2)
+plt.plot(epochs, cls_losses, (&#39;#DB2E4B&#39;), label=&quot;Classification Loss&quot;,linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Class Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+plt.subplot(4, 2, 3)
+plt.plot(epochs, box_losses, (&#39;#DB2E4B&#39;), label=&quot;Box Loss&quot;,linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Box Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+plt.subplot(4, 2,4)
+plt.plot(epochs, model_losses, (&#39;#DB2E4B&#39;), label=&quot;Model Loss&quot;,linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Model Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+
+plt.subplot(4, 2, 5)
+plt.plot(epochs, val_total_losses, (&#39;#DB2E4B&#39;), label=&quot;Validation Total Loss&quot;,linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Validation Total Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+plt.subplot(4, 2, 6)
+plt.plot(epochs, val_cls_losses, (&#39;#DB2E4B&#39;), label=&quot;Validation Classification Loss&quot;,linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Validation Classification Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+plt.subplot(4, 2, 7)
+plt.plot(epochs, val_box_losses, (&#39;#DB2E4B&#39;), label=&quot;Validation Box Loss&quot;,linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Validation Box Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+plt.subplot(4, 2, 8)
+plt.plot(epochs, val_model_losses, (&#39;#DB2E4B&#39;), label=&quot;Validation Model Loss&quot;,linewidth=4)
+plt.xlabel(&quot;Epochs&quot;,fontsize=16)
+plt.ylabel(&quot;Validation Model Loss&quot;,fontsize=16)
+plt.legend(fontsize=16)
+
+plt.tight_layout()
+plt.show()
+<br/><br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+C:\Users\aditi\AppData\Local\Temp\ipykernel_63980\90527764.py:223: MatplotlibDeprecationWarning: Auto-removal of overlapping axes is deprecated since 3.6 and will be removed two minor releases later; explicitly call ax.remove() as needed.
+  plt.subplot(4, 2, 2)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_People-detection_14_1.png" src="../_images/notebooks_People-detection_14_1.png" />
+</div>
+</div>
+</section>
+<section id="Plotting-average-precision,-average-recall-based-on-the-IoU-threshold">
+<h3>Plotting average precision, average recall based on the IoU threshold<a class="headerlink" href="#Plotting-average-precision,-average-recall-based-on-the-IoU-threshold" title="Link to this heading">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span>import matplotlib.pyplot as plt
+import numpy as np
+
+#Given data
+metrics = {
+    &#39;AP&#39;: [0.774, 0.955, 0.905, 1.000,1.000, 0.778],
+    &#39;AR&#39;: [0.747, 0.834, 0.834,1.000, 1.000, 0.834]
+}
+categories = [&#39;0.50:0.95 all&#39;, &#39;0.50 all&#39;, &#39;0.75 all&#39;,
+              &#39;0.50:0.95 small&#39;, &#39;0.50:0.95 med&#39;, &#39;0.50:0.95 large&#39;]
+# Create a bar plot for AP and AR with bars side by side
+bar_width = 0.35  # the width of the bars
+index = np.arange(len(metrics[&#39;AP&#39;]))  # the label locations
+
+fig, ax1 = plt.subplots(figsize=(16,13))
+
+# Bar plots
+rects1 = ax1.bar(index - bar_width/2, metrics[&#39;AP&#39;], bar_width, label=&#39;Average Precision (AP)&#39;, color=&#39;#DB2E4B&#39;) # noqa
+rects2 = ax1.bar(index + bar_width/2, metrics[&#39;AR&#39;], bar_width, label=&#39;Average Recall (AR)&#39;, color=&#39;#FFF572&#39;) # noqa
+
+
+# Labels and legends
+ax1.set_xlabel(&#39;IoU Thresholds and Categories&#39;,fontsize=16)
+ax1.set_ylabel(&#39; Metric value&#39;,fontsize=16)
+ax1.set_title(&#39;Average Precision, Average Recall per Category(People)&#39;,fontsize=20)
+
+# Adjust tick label size (new)
+ax1.tick_params(axis=&#39;x&#39;, labelsize=14)
+ax1.tick_params(axis=&#39;y&#39;, labelsize=14)
+
+ax1.set_xticks(index)
+ax1.set_xticklabels(categories, rotation=45, fontsize=12)
+
+ax1.legend(loc=&#39;upper left&#39;,fontsize = &#39;20&#39;)
+plt.savefig(&#39;barplot.png&#39;)
+plt.show()
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_People-detection_16_0.png" src="../_images/notebooks_People-detection_16_0.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="Custom_training_bolt_detection.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Using a custom made dataset to detect bolts using Mediapipe</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../pages/test_with_camera.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">test_with_camera</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, kromium.no
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Using RoboFlow dataset to detect people using MediaPipe</a><ul>
+<li><a class="reference internal" href="#Import-libraies">Import libraies</a><ul>
+<li><a class="reference internal" href="#Download-dataset-directly-from-Roboflow">Download dataset directly from Roboflow</a></li>
+<li><a class="reference internal" href="#Loading,-training,-and-evaluating">Loading, training, and evaluating</a></li>
+<li><a class="reference internal" href="#Plotting-all-loss-values-using-matplotlib">Plotting all loss values using matplotlib</a></li>
+<li><a class="reference internal" href="#Plotting-average-precision,-average-recall-based-on-the-IoU-threshold">Plotting average precision, average recall based on the IoU threshold</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>
